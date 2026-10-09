@@ -4,28 +4,31 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public paths that do not require auth checks
+  // Static assets & internal next routes MUST always pass through immediately
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/icons/') ||
+    pathname === '/favicon.ico' ||
+    pathname === '/manifest.json' ||
+    pathname === '/sw.js'
+  ) {
+    return NextResponse.next();
+  }
+
+  // Public pages that do not require auth checks
   const isPublicPath =
     pathname === '/' ||
     pathname === '/login' ||
     pathname === '/buddy/login' ||
     pathname === '/buddy/apply' ||
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/icons/') ||
-    pathname.startsWith('/manifest.json') ||
-    pathname.startsWith('/sw.js');
+    pathname.startsWith('/api/');
 
   if (isPublicPath) {
     return NextResponse.next();
   }
 
-  // Check auth cookie / token
-  const authSession = request.cookies.get('sb-access-token') || request.cookies.get('qb_session');
-
-  // In demo / client mode, let client-side router handle redirect with rich UI
+  // Add standard security headers
   const response = NextResponse.next();
-
-  // Add security headers
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
