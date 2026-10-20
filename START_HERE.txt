@@ -1,0 +1,39 @@
+===================================================================
+QUEUEBUDDY (BENGALURU) - HOW TO RUN ON ANY COMPUTER
+===================================================================
+
+Prerequisites:
+Make sure Node.js (v18 or newer) is installed on your computer.
+Download it for free from: https://nodejs.org/ (Recommended: LTS version)
+
+-------------------------------------------------------------------
+OPTION 1: One-Click Quick Start
+-------------------------------------------------------------------
+- On Windows: Double-click "start.bat"
+- On Mac / Linux: In Terminal, run:
+    chmod +x start.sh && ./start.sh
+
+-------------------------------------------------------------------
+OPTION 2: Manual Terminal Commands
+-------------------------------------------------------------------
+1. Open Terminal (Mac/Linux) or Command Prompt / PowerShell (Windows)
+   in this folder.
+
+2. Install dependencies (only needed the first time):
+   npm install
+
+3. Run the development server:
+   npm run dev
+
+4. Open your browser and go to:
+   http://localhost:3000
+
+-------------------------------------------------------------------
+PAGES & DIRECT PORTALS:
+-------------------------------------------------------------------
+- Public Office Directory: http://localhost:3000
+- Customer Login:          http://localhost:3000/login
+- Customer Booking Desk:   http://localhost:3000/app
+- Buddy Portal:            http://localhost:3000/buddy
+- Admin Control Center:    http://localhost:3000/admin
+===================================================================
