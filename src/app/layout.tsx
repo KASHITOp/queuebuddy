@@ -3,6 +3,7 @@ import { Archivo, Onest, Martian_Mono } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { PwaInstallPrompt } from '@/components/pwa/PwaInstallPrompt';
 
 const archivo = Archivo({
   subsets: ['latin'],
@@ -28,8 +29,19 @@ export const metadata: Metadata = {
     'Book a verified Queue Buddy to hold your spot at RTO, Sub-Registrar, PSK, and Civic offices in Bengaluru. Arrive when your turn is near.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/icon.svg',
-    apple: '/icons/icon-192.png',
+    icon: [
+      { url: '/icons/icon.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'QueueBuddy',
   },
 };
 
@@ -50,13 +62,21 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="QueueBuddy" />
+        <meta name="theme-color" content="#FFD60A" />
       </head>
       <body
         className={`${archivo.variable} ${onest.variable} ${martianMono.variable} font-sans antialiased bg-[#FFFCF2] text-[#111111] selection:bg-[#FFD60A] selection:text-[#111111] min-h-screen`}
       >
         <AuthProvider>
-          <AppProvider>{children}</AppProvider>
+          <AppProvider>
+            {children}
+            <PwaInstallPrompt />
+          </AppProvider>
         </AuthProvider>
       </body>
     </html>
