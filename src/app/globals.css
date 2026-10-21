@@ -4,26 +4,49 @@
 
 @layer base {
   :root {
+    /* Chalk #FFFCF2, Meter Black #111111, Rickshaw Yellow #FFD60A, Auto Green #0B7A4B, Coral #FF5A36 */
+    --background: 44 100% 97.5%; /* #FFFCF2 */
+    --foreground: 0 0% 6.7%;     /* #111111 */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 6.7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 6.7%;
+    --primary: 49 100% 52%;       /* #FFD60A Rickshaw Yellow */
+    --primary-foreground: 0 0% 6.7%; /* #111111 */
+    --secondary: 154 83% 26%;     /* #0B7A4B Auto Green */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 42 35% 93%;          /* #F4F0E6 */
+    --muted-foreground: 0 0% 40%;  /* Neutral readable text */
+    --accent: 49 100% 52%;
+    --accent-foreground: 0 0% 6.7%;
+    --destructive: 11 100% 61%;   /* #FF5A36 Coral */
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 20% 87%;         /* #E5E0D5 */
+    --input: 40 20% 87%;
+    --ring: 49 100% 52%;
+    --radius: 1.25rem;
+  }
+
+  .dark {
     --background: 224 71% 4%;
     --foreground: 210 40% 98%;
-    --card: 224 71% 6%;
+    --card: 224 71% 7%;
     --card-foreground: 210 40% 98%;
-    --popover: 224 71% 6%;
+    --popover: 224 71% 7%;
     --popover-foreground: 210 40% 98%;
-    --primary: 48 96% 53%;
-    --primary-foreground: 224 71% 4%;
-    --secondary: 160 84% 39%;
+    --primary: 49 100% 52%;
+    --primary-foreground: 0 0% 6.7%;
+    --secondary: 154 83% 26%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 15%;
     --muted-foreground: 215 20% 65%;
-    --accent: 48 96% 53%;
-    --accent-foreground: 224 71% 4%;
-    --destructive: 0 84% 60%;
+    --accent: 49 100% 52%;
+    --accent-foreground: 0 0% 6.7%;
+    --destructive: 11 100% 61%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 18%;
     --input: 217 33% 18%;
-    --ring: 48 96% 53%;
-    --radius: 1rem;
+    --ring: 49 100% 52%;
   }
 
   * {
@@ -31,16 +54,22 @@
   }
 
   body {
-    background-color: #080b11;
-    color: #f8fafc;
+    background-color: #FFFCF2;
+    color: #111111;
     font-family: var(--font-onest), var(--font-archivo), system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
   }
 
+  .dark body {
+    background-color: #080b11;
+    color: #f8fafc;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-archivo), var(--font-onest), sans-serif;
     letter-spacing: -0.02em;
+    line-height: 1.25;
   }
 
   code, pre, .font-mono {
@@ -75,6 +104,50 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
+}
+
+/* Taxi-meter digit card style */
+.taxi-meter-display {
+  background: #111111;
+  color: #FFD60A;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 2px solid #222222;
+}
+
+/* Flip card animation for meter */
+@keyframes meter-flip {
+  0% {
+    transform: rotateX(0deg);
+  }
+  50% {
+    transform: rotateX(90deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-meter-flip {
+  animation: meter-flip 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+/* 44px+ minimum touch target for mobile thumb comfort */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Respect user's preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Clean A4 Print Styles for Document Checklist */

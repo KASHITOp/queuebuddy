@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Office, Service, SupportedLanguage, Booking } from '@/types';
 import { useApp } from '@/context/AppContext';
+import { SuccessIllustration } from '@/components/illustrations/SuccessIllustration';
 import {
   Check,
   ChevronRight,
@@ -20,6 +21,8 @@ import {
   User,
   Phone,
   ArrowRight,
+  X,
+  MapPin,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -36,6 +39,17 @@ const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
   'Hindi',
   'Tamil',
   'Telugu',
+];
+
+const TIME_SLOTS = [
+  '09:30 AM',
+  '10:00 AM',
+  '10:30 AM',
+  '11:00 AM',
+  '11:30 AM',
+  '12:00 PM',
+  '02:00 PM',
+  '02:30 PM',
 ];
 
 export const BookingWizard: React.FC<BookingWizardProps> = ({
@@ -67,9 +81,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     ? services.filter((s) => s.office_id === selectedOffice.id)
     : [];
 
-  // Fee calculation
+  // Fee calculations
   const buddyBaseFee = selectedService?.queue_buddy_base_fee || 349;
-  // Extra hourly fee if wait hours > 2 (₹100/hr)
   const additionalHours = Math.max(0, expectedWaitHours - 2);
   const extraWaitFee = additionalHours * 100;
   const queueBuddyFee = buddyBaseFee + extraWaitFee;
@@ -91,7 +104,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     if (!selectedOffice || !selectedService) return;
     setIsProcessingPayment(true);
 
-    // Simulate Razorpay payment verification
     setTimeout(() => {
       const newBooking = createBooking({
         officeId: selectedOffice.id,
@@ -109,171 +121,182 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       });
 
       confetti({
-        particleCount: 100,
-        spread: 80,
-        origin: { y: 0.5 },
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
       });
 
       setIsProcessingPayment(false);
       setConfirmedBooking(newBooking);
       setStep(6);
-    }, 1200);
+    }, 1100);
   };
 
-  const stepsList = [
-    { num: 1, label: t.bookingWizard.step1 },
-    { num: 2, label: t.bookingWizard.step2 },
-    { num: 3, label: t.bookingWizard.step3 },
-    { num: 4, label: t.bookingWizard.step4 },
-    { num: 5, label: t.bookingWizard.step5 },
-    { num: 6, label: t.bookingWizard.step6 },
+  const stepTitles = [
+    { num: 1, title: 'Choose Office', subtitle: 'Select government office' },
+    { num: 2, title: 'Choose Service', subtitle: 'Select token service & checklist' },
+    { num: 3, title: 'Date & Arrival Time', subtitle: 'When should buddy hold spot?' },
+    { num: 4, title: 'Language Preference', subtitle: 'Languages spoken with staff' },
+    { num: 5, title: 'Price & Payment', subtitle: 'Transparent breakdown & Razorpay' },
+    { num: 6, title: 'Booking Confirmed!', subtitle: 'Live token ready' },
   ];
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
-      {/* Step Progress Bar */}
-      <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center justify-between gap-1 overflow-x-auto pb-2 sm:pb-0">
-          {stepsList.map((s) => (
-            <div key={s.num} className="flex items-center gap-1.5 shrink-0">
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  step > s.num
-                    ? 'bg-emerald-500 text-white'
-                    : step === s.num
-                    ? 'bg-amber-500 text-slate-950 ring-4 ring-amber-500/20'
-                    : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
-                }`}
+    <div className="w-full max-w-md mx-auto bg-[#FFFFFF] rounded-3xl border-2 border-[#111111] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      {/* Big Step Progress Header */}
+      <div className="p-4 bg-[#FFFCF2] border-b-2 border-[#111111] space-y-2 shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {step > 1 && step < 6 && (
+              <button
+                onClick={handleBack}
+                aria-label="Previous step"
+                className="p-1.5 rounded-xl bg-[#FFFFFF] border border-[#E5E0D5] text-[#111111] hover:bg-[#F4F0E6] active:scale-95 transition-all"
               >
-                {step > s.num ? <Check className="w-3.5 h-3.5" /> : s.num}
-              </div>
-              <span
-                className={`text-[11px] font-medium hidden sm:inline ${
-                  step === s.num
-                    ? 'text-slate-900 dark:text-white font-bold'
-                    : 'text-slate-400'
-                }`}
-              >
-                {s.label}
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+            <div>
+              <span className="text-[10px] font-mono font-black uppercase text-[#0B7A4B] tracking-wider">
+                Step {step} of 5
               </span>
-              {s.num < 6 && (
-                <div
-                  className={`w-4 sm:w-6 h-0.5 mx-1 ${
-                    step > s.num ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'
-                  }`}
-                />
-              )}
+              <h2 className="text-sm sm:text-base font-black text-[#111111] font-display tracking-tight leading-none mt-0.5">
+                {stepTitles[step - 1]?.title}
+              </h2>
             </div>
-          ))}
+          </div>
+
+          <button
+            onClick={onCancel}
+            aria-label="Cancel booking"
+            className="p-1.5 rounded-full hover:bg-[#F4F0E6] text-[#777777]"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Progress Bar Line */}
+        <div className="w-full h-1.5 bg-[#E5E0D5] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#FFD60A] transition-all duration-300"
+            style={{ width: `${(Math.min(step, 5) / 5) * 100}%` }}
+          />
         </div>
       </div>
 
-      {/* Main Wizard Form Body */}
-      <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-6">
-        {/* Step 1: Office Selection */}
+      {/* Main Wizard Step Content (One Decision Per Screen) */}
+      <div className="p-4 sm:p-5 flex-1 overflow-y-auto space-y-4 text-[#111111]">
+        {/* Step 1: Choose Office */}
         {step === 1 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                {t.bookingWizard.step1}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Select the government office in Bengaluru where you require line assistance.
-              </p>
-            </div>
+          <div className="space-y-3">
+            <p className="text-xs text-[#555555]">
+              Select the office in Bengaluru where you want a verified Queue Buddy to hold your counter spot.
+            </p>
 
-            <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
-              {availableOffices.map((off) => (
-                <div
-                  key={off.id}
-                  onClick={() => setSelectedOffice(off)}
-                  className={`cursor-pointer p-4 rounded-2xl border transition-all flex items-center justify-between ${
-                    selectedOffice?.id === off.id
-                      ? 'border-amber-500 bg-amber-500/5 dark:bg-amber-500/10 ring-2 ring-amber-500/20'
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-400'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase">
-                        {off.office_type.replace('_', ' ')}
-                      </span>
-                      <span className="text-xs font-bold text-amber-500">{off.area}</span>
+            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+              {availableOffices.map((off) => {
+                const isSelected = selectedOffice?.id === off.id;
+                return (
+                  <div
+                    key={off.id}
+                    onClick={() => setSelectedOffice(off)}
+                    className={`cursor-pointer p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between touch-target active:scale-[0.99] ${
+                      isSelected
+                        ? 'border-[#111111] bg-[#FFD60A]/15 ring-2 ring-[#FFD60A]'
+                        : 'border-[#E5E0D5] bg-[#FFFFFF] hover:border-[#111111]/40'
+                    }`}
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#F4F0E6] text-[#111111]">
+                          {off.area}
+                        </span>
+                        <span className="text-[10px] text-[#0B7A4B] font-semibold">
+                          ~2.4 km away
+                        </span>
+                      </div>
+                      <h4 className="font-extrabold text-sm text-[#111111] mt-1 font-display truncate">
+                        {locale === 'kn' ? off.name_kn : off.name}
+                      </h4>
+                      <p className="text-[11px] text-[#666666] truncate mt-0.5">
+                        {off.address}
+                      </p>
                     </div>
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-1">
-                      {locale === 'kn' ? off.name_kn : off.name}
-                    </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">{off.address}</p>
-                  </div>
-                  <div className="shrink-0 pl-3">
+
                     <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                        selectedOffice?.id === off.id
-                          ? 'border-amber-500 bg-amber-500 text-slate-950'
-                          : 'border-slate-300 dark:border-slate-700'
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        isSelected
+                          ? 'border-[#111111] bg-[#111111] text-[#FFD60A]'
+                          : 'border-[#CCCCCC] bg-white'
                       }`}
                     >
-                      {selectedOffice?.id === off.id && <Check className="w-3.5 h-3.5" />}
+                      {isSelected && <Check className="w-3.5 h-3.5" />}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Step 2: Service Selection */}
+        {/* Step 2: Choose Service */}
         {step === 2 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                {t.bookingWizard.step2}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Select your required service at {selectedOffice?.name}.
-              </p>
+          <div className="space-y-3">
+            <div className="p-3 rounded-2xl bg-[#F4F0E6] border border-[#E5E0D5] text-xs">
+              <span className="text-[#555555]">Office: </span>
+              <strong className="text-[#111111]">{selectedOffice?.name}</strong>
             </div>
 
-            <div className="space-y-3">
+            <p className="text-xs text-[#555555]">
+              Select the service counter you need assistance with. Document checklists will be attached automatically.
+            </p>
+
+            <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
               {availableServices.map((srv) => {
-                const srvDocs = checklists.filter((c) => c.service_id === srv.id);
+                const isSelected = selectedService?.id === srv.id;
+                const checklistCount = checklists.filter((c) => c.service_id === srv.id).length;
+
                 return (
                   <div
                     key={srv.id}
                     onClick={() => setSelectedService(srv)}
-                    className={`cursor-pointer p-4 rounded-2xl border transition-all space-y-2.5 ${
-                      selectedService?.id === srv.id
-                        ? 'border-amber-500 bg-amber-500/5 dark:bg-amber-500/10 ring-2 ring-amber-500/20'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-400'
+                    className={`cursor-pointer p-4 rounded-2xl border-2 transition-all space-y-2.5 touch-target active:scale-[0.99] ${
+                      isSelected
+                        ? 'border-[#111111] bg-[#FFD60A]/15 ring-2 ring-[#FFD60A]'
+                        : 'border-[#E5E0D5] bg-[#FFFFFF] hover:border-[#111111]/40'
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h4 className="font-extrabold text-sm text-[#111111] font-display">
                           {locale === 'kn' ? srv.title_kn : srv.title}
                         </h4>
-                        <p className="text-xs text-slate-500">{srv.description}</p>
+                        <p className="text-[11px] text-[#555555] line-clamp-2 mt-0.5">
+                          {srv.description}
+                        </p>
                       </div>
+
                       <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ml-2 ${
-                          selectedService?.id === srv.id
-                            ? 'border-amber-500 bg-amber-500 text-slate-950'
-                            : 'border-slate-300 dark:border-slate-700'
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          isSelected
+                            ? 'border-[#111111] bg-[#111111] text-[#FFD60A]'
+                            : 'border-[#CCCCCC] bg-white'
                         }`}
                       >
-                        {selectedService?.id === srv.id && <Check className="w-3.5 h-3.5" />}
+                        {isSelected && <Check className="w-3.5 h-3.5" />}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs flex-wrap pt-1 border-t border-slate-100 dark:border-slate-800">
-                      <span className="font-medium text-slate-600 dark:text-slate-400">
-                        Govt Fee: <strong>₹{srv.government_fee}</strong>
+                    {/* Government Fee vs QueueBuddy Base Fee Badges */}
+                    <div className="flex items-center gap-2 pt-1 border-t border-[#E5E0D5]/60 text-xs flex-wrap">
+                      <span className="px-2 py-0.5 rounded-lg bg-[#FFFFFF] text-[#111111] font-bold border border-[#E5E0D5]">
+                        Govt Fee: ₹{srv.government_fee}
                       </span>
-                      <span className="font-bold text-amber-500">
-                        QueueBuddy Fee: ₹{srv.queue_buddy_base_fee}
+                      <span className="px-2 py-0.5 rounded-lg bg-[#FFD60A] text-[#111111] font-black border border-[#111111]">
+                        Buddy: ₹{srv.queue_buddy_base_fee}
                       </span>
-                      <span className="text-slate-400">
-                        • {srvDocs.length} mandatory checklist items
+                      <span className="text-[11px] text-[#0B7A4B] font-bold ml-auto">
+                        📋 {checklistCount} docs required
                       </span>
                     </div>
                   </div>
@@ -283,415 +306,330 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
           </div>
         )}
 
-        {/* Step 3: Date, Arrival Time & Wait Duration */}
+        {/* Step 3: Date & Buddy Arrival Time */}
         {step === 3 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                {t.bookingWizard.step3}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Specify when your Queue Buddy should arrive and secure your counter position.
-              </p>
+          <div className="space-y-4">
+            {/* Booking Date */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-black uppercase text-[#555555] tracking-wider font-mono">
+                Booking Date
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  value={bookingDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setBookingDate(e.target.value)}
+                  className="w-full p-3 pl-10 rounded-2xl bg-[#FFFFFF] border-2 border-[#E5E0D5] text-xs sm:text-sm font-mono font-bold text-[#111111] focus:border-[#111111] focus:outline-none"
+                />
+                <Calendar className="w-4 h-4 text-[#777777] absolute left-3.5 top-3.5" />
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Select Date
-                </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={bookingDate}
-                    onChange={(e) => setBookingDate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-medium focus:ring-2 focus:ring-amber-500"
-                  />
-                  <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-3.5 pointer-events-none" />
-                </div>
+            {/* Buddy Arrival Time Slot */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-black uppercase text-[#555555] tracking-wider font-mono">
+                {t.bookingWizard.arrivalTimeLabel}
+              </label>
+              <p className="text-[11px] text-[#555555]">
+                What time should your Queue Buddy reach the office to grab your token?
+              </p>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {TIME_SLOTS.map((slot) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => setArrivalTime(slot)}
+                    className={`py-2.5 px-3 rounded-xl border-2 font-mono font-bold text-xs transition-all touch-target ${
+                      arrivalTime === slot
+                        ? 'bg-[#FFD60A] text-[#111111] border-[#111111] shadow-sm'
+                        : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t.bookingWizard.arrivalTimeLabel}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '02:00 PM'].map((time) => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setArrivalTime(time)}
-                      className={`py-2.5 px-2 rounded-xl text-xs font-semibold border transition-all ${
-                        arrivalTime === time
-                          ? 'border-amber-500 bg-amber-500 text-slate-950 shadow-sm'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-400 text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+            {/* Expected Wait Hours */}
+            <div className="p-3.5 rounded-2xl bg-[#F4F0E6] border border-[#E5E0D5] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#111111]">
+                  Expected Queue Duration to Hold
+                </span>
+                <span className="font-mono font-extrabold text-sm text-[#0B7A4B]">
+                  {expectedWaitHours} hrs
+                </span>
               </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    {t.bookingWizard.expectedWaitLabel}
-                  </label>
-                  <span className="text-xs font-bold text-amber-500">{expectedWaitHours} hours</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="4"
-                  step="0.5"
-                  value={expectedWaitHours}
-                  onChange={(e) => setExpectedWaitHours(parseFloat(e.target.value))}
-                  className="w-full accent-amber-500 cursor-pointer"
-                />
-                <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-                  <span>1 hr (Express)</span>
-                  <span>2 hrs (Standard base)</span>
-                  <span>3 hrs</span>
-                  <span>4 hrs (Heavy queue)</span>
-                </div>
-              </div>
-
-              {/* Customer Contact Info */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Your Full Name
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full px-3 py-2 pl-8 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs focus:ring-2 focus:ring-amber-500"
-                    />
-                    <User className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    WhatsApp Phone Number
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="w-full px-3 py-2 pl-8 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs focus:ring-2 focus:ring-amber-500"
-                    />
-                    <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                  </div>
-                </div>
-              </div>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                step="0.5"
+                value={expectedWaitHours}
+                onChange={(e) => setExpectedWaitHours(parseFloat(e.target.value))}
+                className="w-full accent-[#0B7A4B]"
+              />
+              <p className="text-[10px] text-[#666666]">
+                First 2 hours included in base fee. Additional wait: ₹100/hr.
+              </p>
             </div>
           </div>
         )}
 
-        {/* Step 4: Buddy Language Preference */}
+        {/* Step 4: Language Preference */}
         {step === 4 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h3 className="text-sm font-black text-[#111111] font-display">
                 {t.bookingWizard.preferredLangTitle}
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-[#555555] mt-0.5">
                 {t.bookingWizard.preferredLangDesc}
               </p>
             </div>
 
             {/* Primary Language */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                {t.bookingWizard.primaryLang} (High Priority Match)
+            <div className="space-y-1.5">
+              <label className="text-xs font-black uppercase text-[#555555] tracking-wider font-mono">
+                {t.bookingWizard.primaryLang}
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {SUPPORTED_LANGUAGES.map((lang) => (
                   <button
                     key={lang}
                     type="button"
                     onClick={() => setPreferredLang(lang)}
-                    className={`p-3 rounded-2xl text-xs font-bold border transition-all text-left flex items-center justify-between ${
+                    className={`p-3 rounded-2xl border-2 font-bold text-xs flex items-center justify-between transition-all touch-target ${
                       preferredLang === lang
-                        ? 'border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-2 ring-amber-500/20'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-400 text-slate-700 dark:text-slate-300'
+                        ? 'bg-[#FFD60A] text-[#111111] border-[#111111] shadow-sm'
+                        : 'bg-[#FFFFFF] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
                     }`}
                   >
                     <span>{lang}</span>
-                    {preferredLang === lang && <Check className="w-4 h-4 text-amber-500" />}
+                    {preferredLang === lang && <Check className="w-4 h-4 text-[#111111]" />}
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Backup Language */}
-            <div className="space-y-2 pt-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+            <div className="space-y-1.5">
+              <label className="text-xs font-black uppercase text-[#555555] tracking-wider font-mono">
                 {t.bookingWizard.backupLang}
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {SUPPORTED_LANGUAGES.filter((l) => l !== preferredLang).map((lang) => (
                   <button
                     key={lang}
                     type="button"
                     onClick={() => setBackupLang(backupLang === lang ? '' : lang)}
-                    className={`p-3 rounded-2xl text-xs font-semibold border transition-all text-left flex items-center justify-between ${
+                    className={`p-2.5 rounded-xl border font-semibold text-xs flex items-center justify-between transition-all touch-target ${
                       backupLang === lang
-                        ? 'border-indigo-500 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/20'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-400 text-slate-600 dark:text-slate-400'
+                        ? 'bg-[#111111] text-[#FFFCF2] border-[#111111]'
+                        : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
                     }`}
                   >
                     <span>{lang}</span>
-                    {backupLang === lang && <Check className="w-4 h-4 text-indigo-500" />}
+                    {backupLang === lang && <Check className="w-3.5 h-3.5 text-[#FFD60A]" />}
                   </button>
                 ))}
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2">
-              <Globe className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <strong>Language Matching Guarantee: </strong>
-                Our dispatch engine strictly filters available verified Buddies in your area who
-                speak <strong>{preferredLang}</strong>. If unavailable, it matches your backup{' '}
-                <strong>{backupLang || 'English'}</strong>.
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 5: Review & Transparent Price Breakdown */}
+        {/* Step 5: Transparent Price Breakdown & Payment */}
         {step === 5 && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                {t.bookingWizard.priceBreakdownTitle}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">{t.bookingWizard.transparentNote}</p>
-            </div>
+          <div className="space-y-4">
+            {/* Price Breakdown (Strict Distinction between QueueBuddy and Govt fees) */}
+            <div className="rounded-2xl border-2 border-[#111111] bg-[#FFFCF2] p-4 space-y-3">
+              <h4 className="text-xs font-mono font-black uppercase text-[#111111] tracking-wider">
+                TRANSPARENT PRICE SUMMARY
+              </h4>
 
-            {/* Summary card */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Office:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {selectedOffice?.name}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Service:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {selectedService?.title}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Schedule:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {bookingDate} at {arrivalTime} ({expectedWaitHours} hrs)
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Language:</span>
-                <span className="font-semibold text-amber-500">
-                  {preferredLang} {backupLang ? `(Backup: ${backupLang})` : ''}
-                </span>
-              </div>
-            </div>
-
-            {/* Transparent Fees Table */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden text-xs">
-              <div className="p-3 bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
-                Fee Details
-              </div>
-              <div className="p-4 space-y-2.5">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      QueueBuddy Line Assistance Fee
-                    </span>
-                    <span className="block text-[11px] text-slate-400">
-                      Covers verified buddy arrival, token securing & live updates
-                    </span>
-                  </div>
-                  <span className="font-bold text-slate-900 dark:text-white">
+              <div className="space-y-2 text-xs">
+                {/* QueueBuddy Fee */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[#555555]">
+                    QueueBuddy Line Assistance (Base 2 hrs)
+                  </span>
+                  <span className="font-mono font-bold text-[#111111]">
                     ₹{buddyBaseFee}
                   </span>
                 </div>
 
                 {extraWaitFee > 0 && (
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
-                    <span>Extra wait time ({additionalHours} hrs @ ₹100/hr)</span>
-                    <span>₹{extraWaitFee}</span>
+                  <div className="flex items-center justify-between text-[#555555]">
+                    <span>Additional Queue Hours ({additionalHours} hrs @ ₹100/hr)</span>
+                    <span className="font-mono font-bold text-[#111111]">
+                      +₹{extraWaitFee}
+                    </span>
                   </div>
                 )}
 
-                <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
-                  <span>Platform & Insurance Fee</span>
-                  <span>₹{platformFee}</span>
+                <div className="flex items-center justify-between text-[#555555]">
+                  <span>Safety, Verified Buddy Match & Platform</span>
+                  <span className="font-mono font-bold text-[#111111]">
+                    ₹{platformFee}
+                  </span>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center text-sm font-extrabold text-slate-900 dark:text-white">
-                  <span>Payable Now (QueueBuddy)</span>
-                  <span className="text-amber-500 text-base">₹{totalAmountPayable}</span>
-                </div>
-
-                {/* Government Counter Fee Note */}
-                <div className="pt-2 border-t border-dashed border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs text-slate-500">
+                {/* Government Counter Fee Highlight (Paid at Counter) */}
+                <div className="p-2.5 rounded-xl bg-[#E6F5ED] border border-[#0B7A4B]/30 flex items-start justify-between text-xs text-[#0B7A4B]">
                   <div>
-                    <span>Official Govt Fee (Paid at counter by you)</span>
-                    <span className="block text-[10px] text-slate-400">
-                      Collected directly by government cashier / portal
-                    </span>
+                    <div className="font-black">Official Govt Counter Fee: ₹{govtFee}</div>
+                    <div className="text-[10px] text-[#0B7A4B]/80 leading-tight mt-0.5">
+                      ⚠️ Paid directly at the government desk upon handover. NOT charged online.
+                    </div>
                   </div>
-                  <span className="font-bold text-slate-700 dark:text-slate-300">
-                    ₹{govtFee}
+                  <span className="text-[10px] font-mono font-bold uppercase bg-white px-2 py-0.5 rounded border border-[#0B7A4B]/20">
+                    Pay at Desk
+                  </span>
+                </div>
+
+                {/* Total Payable Online Now */}
+                <div className="flex items-center justify-between pt-2 border-t-2 border-[#111111] text-sm font-black">
+                  <span>Total Payable Online Now:</span>
+                  <span className="font-mono text-base text-[#111111]">
+                    ₹{totalAmountPayable}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Payment Method Selection (Razorpay Test Mode) */}
+            {/* Test Payment Methods (Razorpay Test Mode) */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                Pay with Razorpay (TEST MODE)
+              <label className="text-xs font-black uppercase text-[#555555] tracking-wider font-mono">
+                Pay via Razorpay (UPI / Card - Test Mode)
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'upi_gpay', label: 'Google Pay (UPI)', icon: '🟢' },
-                  { id: 'upi_phonepe', label: 'PhonePe (UPI)', icon: '🟣' },
-                  { id: 'upi_qr', label: 'Scan UPI QR', icon: '📱' },
-                  { id: 'card', label: 'Debit / Credit Card', icon: '💳' },
-                ].map((pm) => (
-                  <button
-                    key={pm.id}
-                    type="button"
-                    onClick={() => setPaymentMethod(pm.id as any)}
-                    className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all ${
-                      paymentMethod === pm.id
-                        ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/20'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
-                    }`}
-                  >
-                    <span>{pm.icon}</span>
-                    <span>{pm.label}</span>
-                  </button>
-                ))}
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('upi_gpay')}
+                  className={`p-3 rounded-xl border-2 font-bold flex items-center gap-2 transition-all touch-target ${
+                    paymentMethod === 'upi_gpay'
+                      ? 'border-[#111111] bg-[#FFD60A] text-[#111111]'
+                      : 'border-[#E5E0D5] bg-[#F4F0E6] text-[#555555]'
+                  }`}
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>Google Pay / UPI</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`p-3 rounded-xl border-2 font-bold flex items-center gap-2 transition-all touch-target ${
+                    paymentMethod === 'card'
+                      ? 'border-[#111111] bg-[#FFD60A] text-[#111111]'
+                      : 'border-[#E5E0D5] bg-[#F4F0E6] text-[#555555]'
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Test Card</span>
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 6: Confirmation Screen */}
-        {step === 6 && confirmedBooking && (
-          <div className="space-y-5 text-center py-4 animate-in zoom-in-95 duration-300">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mx-auto text-emerald-500">
-              <Check className="w-8 h-8 stroke-[3]" />
+        {/* Step 6: Confirmation & Success Celebration */}
+        {step === 6 && (
+          <div className="text-center py-4 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-center">
+              <SuccessIllustration className="w-36 h-36" />
             </div>
 
-            <div>
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                Booking ID: {confirmedBooking.booking_code}
-              </span>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-2">
-                Queue Buddy Booked Successfully! 🎉
+            <div className="space-y-1">
+              <h3 className="text-xl font-black text-[#111111] font-display">
+                Spot Secured in Bengaluru!
               </h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                Your Buddy has been scheduled. Prepare your documents now to avoid delays at the
-                counter.
+              <p className="text-xs text-[#555555]">
+                Your Queue Buddy has been scheduled. Your spot token is active.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-2">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Office:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {confirmedBooking.office.name}
+            {/* Live Token Details */}
+            <div className="p-4 rounded-2xl bg-[#111111] text-[#FFFCF2] text-left space-y-2.5">
+              <div className="flex items-center justify-between border-b border-white/20 pb-2">
+                <span className="text-[10px] font-mono text-[#FFD60A] font-bold uppercase">
+                  ACTIVE BOOKING CODE
+                </span>
+                <span className="text-xs font-mono font-bold text-white">
+                  {confirmedBooking?.booking_code || 'QB-BLR-8492'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Assigned Buddy:</span>
-                <span className="font-bold text-emerald-500">
-                  {confirmedBooking.buddy?.full_name} ({confirmedBooking.preferred_language})
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Arrival Time:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {confirmedBooking.booking_date} at {confirmedBooking.arrival_time}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Razorpay Ref:</span>
-                <span className="font-mono text-slate-500">{confirmedBooking.razorpay_payment_id}</span>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <div className="text-[10px] text-white/60">Office</div>
+                  <div className="font-bold text-white truncate">
+                    {selectedOffice?.name}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-white/60">Token Number</div>
+                  <div className="font-mono font-black text-[#FFD60A]">
+                    {confirmedBooking?.token_number || 'KA03-B42'}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="pt-2 flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => onBookingComplete(confirmedBooking)}
-                className="flex-1 py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all"
-              >
-                <FileText className="w-4 h-4" />
-                <span>Open Document Checklist & Live Queue</span>
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                if (confirmedBooking) onBookingComplete(confirmedBooking);
+                else onCancel();
+              }}
+              className="w-full py-4 px-4 rounded-2xl bg-[#FFD60A] text-[#111111] font-black text-sm border-2 border-[#111111] shadow-lg active:scale-95 transition-transform touch-target flex items-center justify-center gap-2"
+            >
+              <span>Track Live Queue & View Buddy</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>
 
-      {/* Footer Navigation Buttons */}
+      {/* Wizard Bottom Action Bar */}
       {step < 6 && (
-        <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
-          {step > 1 ? (
-            <button
-              onClick={handleBack}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>{t.common.back}</span>
-            </button>
-          ) : (
-            <button
-              onClick={onCancel}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 transition-colors"
-            >
-              {t.common.cancel}
-            </button>
-          )}
+        <div className="p-4 bg-[#FFFCF2] border-t-2 border-[#111111] flex items-center justify-between gap-3 shrink-0">
+          <div className="text-xs">
+            <span className="text-[#555555]">Total: </span>
+            <span className="font-mono font-black text-sm text-[#111111]">
+              ₹{totalAmountPayable}
+            </span>
+          </div>
 
-          {step < 5 ? (
-            <button
-              onClick={handleNext}
-              disabled={(step === 1 && !selectedOffice) || (step === 2 && !selectedService)}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all"
-            >
-              <span>{t.common.next}</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={handlePayAndConfirm}
-              disabled={isProcessingPayment}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/25 transition-all"
-            >
-              {isProcessingPayment ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  <span>Processing Razorpay Test Payment...</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Pay ₹{totalAmountPayable} & Confirm</span>
-                </>
-              )}
-            </button>
-          )}
+          <div className="flex gap-2">
+            {step < 5 ? (
+              <button
+                onClick={handleNext}
+                disabled={(step === 1 && !selectedOffice) || (step === 2 && !selectedService)}
+                className="py-3 px-6 rounded-xl bg-[#FFD60A] text-[#111111] font-black text-xs border-2 border-[#111111] shadow-sm active:scale-95 transition-all touch-target flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>Continue</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handlePayAndConfirm}
+                disabled={isProcessingPayment}
+                className="py-3 px-6 rounded-xl bg-[#0B7A4B] text-white font-black text-xs shadow-md active:scale-95 transition-all touch-target flex items-center gap-2 disabled:opacity-50"
+              >
+                {isProcessingPayment ? (
+                  <span>Verifying Payment...</span>
+                ) : (
+                  <>
+                    <IndianRupee className="w-4 h-4" />
+                    <span>Pay ₹{totalAmountPayable} & Confirm</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

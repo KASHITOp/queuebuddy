@@ -38,7 +38,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#f59e0b',
+  themeColor: '#FFD60A',
 };
 
 export default function RootLayout({
@@ -47,13 +47,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
       </head>
       <body
-        className={`${archivo.variable} ${onest.variable} ${martianMono.variable} font-sans antialiased bg-[#080b11] text-slate-100 selection:bg-amber-400 selection:text-black`}
+        className={`${archivo.variable} ${onest.variable} ${martianMono.variable} font-sans antialiased bg-[#FFFCF2] text-[#111111] selection:bg-[#FFD60A] selection:text-[#111111] min-h-screen`}
       >
         <AuthProvider>
           <AppProvider>{children}</AppProvider>

@@ -3,132 +3,78 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
-import { UserRole } from '@/types';
+import { Locale } from '@/lib/i18n';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import {
-  ShieldCheck,
-  Globe,
-  MapPin,
-  Sparkles,
-  Users,
-  Building,
-  UserCheck,
-  User,
-  LogOut,
-  LogIn,
-} from 'lucide-react';
+import { Globe, User as UserIcon } from 'lucide-react';
 
-export const Navbar: React.FC = () => {
-  const { role, setRole, locale, setLocale, t } = useApp();
-  const { user, isAuthenticated, signOut, quickDemoLogin } = useAuth();
-  const router = useRouter();
+interface NavbarProps {
+  onAccountClick?: () => void;
+}
 
-  const handleRoleSwitch = (targetRole: UserRole) => {
-    setRole(targetRole);
-    if (targetRole === 'buddy') {
-      quickDemoLogin('buddy');
-    } else if (targetRole === 'admin') {
-      quickDemoLogin('admin', 'super_admin');
-    } else {
-      quickDemoLogin('customer');
-    }
+export const Navbar: React.FC<NavbarProps> = ({ onAccountClick }) => {
+  const { locale, setLocale, t } = useApp();
+  const { user, isAuthenticated } = useAuth();
+
+  const handleNextLocale = () => {
+    if (locale === 'en') setLocale('kn');
+    else if (locale === 'kn') setLocale('hi');
+    else setLocale('en');
+  };
+
+  const localeLabel: Record<Locale, string> = {
+    en: 'English',
+    kn: 'ಕನ್ನಡ',
+    hi: 'हिंदी',
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-        {/* Brand Logo & Bengaluru Tag */}
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 font-black text-xl flex items-center justify-center shadow-md shadow-amber-500/20">
+    <header className="sticky top-0 z-30 w-full bg-[#FFFCF2]/90 backdrop-blur-md border-b border-[#E5E0D5] px-4 py-2.5">
+      <div className="max-w-md mx-auto flex items-center justify-between gap-2">
+        {/* Mobile Brand Title */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-9 h-9 rounded-xl bg-[#FFD60A] border-2 border-[#111111] text-[#111111] font-black text-lg flex items-center justify-center shadow-sm group-active:scale-95 transition-transform">
             Q
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-base sm:text-lg tracking-tight text-white">
+              <span className="font-extrabold text-base tracking-tight text-[#111111]">
                 QueueBuddy
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                Bengaluru
+              <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-[#FFD60A] text-[#111111] border border-[#111111]/20">
+                BLR
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 hidden sm:block">
-              {locale === 'kn' ? 'ಸರ್ಕಾರಿ ಕಚೇರಿ ಸರದಿ ಸಹಾಯ' : 'Govt Office Line Assistance'}
+            <p className="text-[10px] text-[#555555] font-medium leading-none">
+              {locale === 'kn' ? 'ಸರ್ಕಾರಿ ಕಚೇರಿ ಸರದಿ' : locale === 'hi' ? 'सरकारी कतार सहायता' : 'Govt Line Assistance'}
             </p>
           </div>
         </Link>
 
-        {/* Right Controls: Language Toggle, Role Switcher & Auth State */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Bilingual Language Switcher */}
+        {/* Right Action: Language Switcher Pill */}
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setLocale(locale === 'en' ? 'kn' : 'en')}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-800 transition-colors flex items-center gap-1.5"
-            title="Toggle English / Kannada"
+            onClick={handleNextLocale}
+            aria-label="Switch Language (English / Kannada / Hindi)"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F4F0E6] hover:bg-[#EAE6DF] border border-[#E5E0D5] text-xs font-bold text-[#111111] active:scale-95 transition-all touch-target"
           >
-            <Globe className="w-3.5 h-3.5 text-amber-500" />
-            <span>{locale === 'en' ? 'ಕನ್ನಡ' : 'English'}</span>
+            <Globe className="w-3.5 h-3.5 text-[#0B7A4B]" />
+            <span className="font-semibold">{localeLabel[locale]}</span>
           </button>
 
-          {/* Quick Role Switcher */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-            <button
-              onClick={() => handleRoleSwitch('customer')}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                user?.role === 'customer'
-                  ? 'bg-amber-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+          {isAuthenticated ? (
+            <Link
+              href="/account"
+              aria-label="User Account"
+              className="w-9 h-9 rounded-xl bg-[#FFFFFF] border border-[#E5E0D5] flex items-center justify-center text-[#111111] font-bold text-xs shadow-sm active:scale-95 transition-transform"
             >
-              User
-            </button>
-            <button
-              onClick={() => handleRoleSwitch('buddy')}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                user?.role === 'buddy'
-                  ? 'bg-amber-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Buddy
-            </button>
-            <button
-              onClick={() => handleRoleSwitch('admin')}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                user?.role === 'admin'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Admin
-            </button>
-          </div>
-
-          {/* User Account / Auth Buttons */}
-          {isAuthenticated && user ? (
-            <div className="flex items-center gap-1.5">
-              <Link
-                href="/account"
-                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-colors"
-                title="Account Settings"
-              >
-                <User className="w-4 h-4 text-amber-400" />
-              </Link>
-              <button
-                onClick={signOut}
-                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-rose-400 transition-colors hidden sm:block"
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+              {user?.full_name?.charAt(0) || <UserIcon className="w-4 h-4" />}
+            </Link>
           ) : (
             <Link
               href="/login"
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl bg-[#111111] text-[#FFFCF2] text-xs font-bold active:scale-95 transition-transform shadow-sm"
             >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In</span>
+              Sign In
             </Link>
           )}
         </div>

@@ -1,23 +1,24 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Office, OfficeType } from '@/types';
+import { Office } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { OfficeMap } from '@/components/map/OfficeMap';
 import { CrowdStatusCard } from './CrowdStatusCard';
+import { EmptyIllustration } from '@/components/illustrations/EmptyIllustration';
 import {
   Search,
-  Filter,
+  SlidersHorizontal,
   Map,
   List,
-  CheckCircle2,
-  Clock,
   MapPin,
+  Clock,
+  Sparkles,
   ChevronRight,
   ShieldCheck,
-  Building,
+  X,
   Bell,
-  Sparkles,
+  Check,
 } from 'lucide-react';
 
 interface OfficeDirectoryProps {
@@ -29,14 +30,16 @@ export const OfficeDirectory: React.FC<OfficeDirectoryProps> = ({
   onSelectOffice,
   onBookOffice,
 }) => {
-  const { offices, t, locale } = useApp();
+  const { offices, t, locale, registerDemand } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [bookableOnly, setBookableOnly] = useState(false);
-  const [viewMode, setViewMode] = useState<'both' | 'map' | 'list'>('both');
-  const [activeOfficeForPin, setActiveOfficeForPin] = useState<Office | null>(null);
+  const [crowdFilter, setCrowdFilter] = useState<'all' | 'low'>('all');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [notifiedOfficeId, setNotifiedOfficeId] = useState<string | null>(null);
 
   // Extract unique areas
   const areas = useMemo(() => {
@@ -61,259 +64,369 @@ export const OfficeDirectory: React.FC<OfficeDirectoryProps> = ({
     });
   }, [offices, searchQuery, selectedType, selectedArea, bookableOnly]);
 
+  const activeFilterCount =
+    (selectedType !== 'all' ? 1 : 0) +
+    (selectedArea !== 'all' ? 1 : 0) +
+    (bookableOnly ? 1 : 0) +
+    (crowdFilter !== 'all' ? 1 : 0);
+
   const officeTypeOptions: { id: string; label: string; icon: string }[] = [
     { id: 'all', label: 'All Offices', icon: '🏛️' },
-    { id: 'rto', label: 'RTO', icon: '🚗' },
+    { id: 'rto', label: 'RTO (Transport)', icon: '🚗' },
     { id: 'sub_registrar', label: 'Sub-Registrar', icon: '📜' },
     { id: 'psk', label: 'Passport (PSK)', icon: '🛂' },
     { id: 'ward_civic', label: 'BBMP / Civic', icon: '🏢' },
-    { id: 'utility', label: 'Utility (BESCOM/BWSSB)', icon: '⚡' },
+    { id: 'utility', label: 'Utility (BESCOM)', icon: '⚡' },
     { id: 'taluk', label: 'Taluk Office', icon: '🏛️' },
   ];
 
+  const handleNotifyMe = (e: React.MouseEvent, officeId: string) => {
+    e.stopPropagation();
+    registerDemand(officeId, '+91 98450 00000', 'general');
+    setNotifiedOfficeId(officeId);
+    setTimeout(() => setNotifiedOfficeId(null), 3500);
+  };
+
   return (
-    <div className="space-y-4">
-      {/* Search Bar & Filter Header */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder={t.common.searchOffice}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
-          />
-          <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-3 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* Office Type Category Pills */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {officeTypeOptions.map((type) => (
-            <button
-              key={type.id}
-              onClick={() => setSelectedType(type.id)}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 ${
-                selectedType === type.id
-                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              <span>{type.icon}</span>
-              <span>{type.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Filters Row: Area & Bookable toggle & View Switch */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/80 text-xs">
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Area Dropdown */}
-            <select
-              value={selectedArea}
-              onChange={(e) => setSelectedArea(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
-            >
-              <option value="all">All Bengaluru Areas</option>
-              {areas
-                .filter((a) => a !== 'all')
-                .map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-            </select>
-
-            {/* Bookable only switch */}
-            <label className="flex items-center gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 font-medium select-none">
-              <input
-                type="checkbox"
-                checked={bookableOnly}
-                onChange={(e) => setBookableOnly(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500 accent-amber-500"
-              />
-              <span>{t.common.bookableOnly}</span>
-            </label>
+    <div className="space-y-3.5 max-w-md mx-auto">
+      {/* Top Search & Toggle Control Bar */}
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder={t.common.searchOffice}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label={t.common.searchOffice}
+              className="w-full pl-9 pr-8 py-2.5 rounded-2xl bg-[#FFFFFF] border-2 border-[#111111]/15 text-xs sm:text-sm text-[#111111] placeholder-[#888888] focus:outline-none focus:border-[#111111] transition-all"
+            />
+            <Search className="w-4 h-4 text-[#777777] absolute left-3 top-3" />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-2.5 text-xs text-[#777777] hover:text-[#111111]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <button
-              onClick={() => setViewMode('both')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === 'both'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
-            >
-              Split
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
-                viewMode === 'map'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
-            >
-              <Map className="w-3.5 h-3.5" />
-              <span>Map</span>
-            </button>
+          {/* Bottom-Sheet Filter Trigger Button */}
+          <button
+            onClick={() => setIsFilterSheetOpen(true)}
+            aria-label="Open filter sheet"
+            className={`relative p-2.5 rounded-2xl border-2 flex items-center justify-center touch-target transition-all active:scale-95 ${
+              activeFilterCount > 0
+                ? 'bg-[#FFD60A] border-[#111111] text-[#111111] font-bold shadow-sm'
+                : 'bg-[#FFFFFF] border-[#111111]/15 text-[#111111] hover:bg-[#F4F0E6]'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#0B7A4B] text-white text-[10px] font-mono font-black flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* View Mode Pill & Category Scroll */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Map/List Switcher Pill */}
+          <div className="flex items-center p-1 rounded-xl bg-[#F4F0E6] border border-[#E5E0D5] text-xs font-bold shrink-0">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all ${
+              aria-selected={viewMode === 'list'}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-[#FFFFFF] text-[#111111] shadow-sm font-extrabold'
+                  : 'text-[#666666] hover:text-[#111111]'
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>List</span>
+              <span>{t.common.listView}</span>
             </button>
+            <button
+              onClick={() => setViewMode('map')}
+              aria-selected={viewMode === 'map'}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'map'
+                  ? 'bg-[#FFFFFF] text-[#111111] shadow-sm font-extrabold'
+                  : 'text-[#666666] hover:text-[#111111]'
+              }`}
+            >
+              <Map className="w-3.5 h-3.5" />
+              <span>{t.common.mapView}</span>
+            </button>
+          </div>
+
+          <div className="text-[11px] font-mono font-bold text-[#666666] shrink-0">
+            {filteredOffices.length} offices
           </div>
         </div>
       </div>
 
-      {/* Main Content Layout: Map + List */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Map View Column */}
-        {(viewMode === 'both' || viewMode === 'map') && (
-          <div
-            className={`w-full ${
-              viewMode === 'map' ? 'lg:col-span-12 h-[680px]' : 'lg:col-span-5 h-[360px] lg:h-[580px] lg:sticky lg:top-24'
-            }`}
+      {/* Map View Rendering */}
+      {viewMode === 'map' && (
+        <div className="rounded-3xl overflow-hidden border-2 border-[#111111] shadow-md">
+          <OfficeMap
+            offices={filteredOffices}
+            onSelectOffice={(office) => onSelectOffice(office)}
+          />
+        </div>
+      )}
+
+      {/* Empty State */}
+      {filteredOffices.length === 0 && (
+        <div className="p-8 rounded-3xl bg-[#FFFFFF] border-2 border-[#111111]/10 text-center space-y-3 flex flex-col items-center">
+          <EmptyIllustration className="w-36 h-36" />
+          <h3 className="text-base font-black text-[#111111] font-display">
+            No matching Bengaluru offices found
+          </h3>
+          <p className="text-xs text-[#555555] max-w-xs">
+            Try resetting your search query or removing the area and category filters.
+          </p>
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedType('all');
+              setSelectedArea('all');
+              setBookableOnly(false);
+              setCrowdFilter('all');
+            }}
+            className="px-4 py-2 rounded-xl bg-[#FFD60A] text-[#111111] font-bold text-xs border border-[#111111] active:scale-95 transition-transform"
           >
-            <OfficeMap
-              offices={filteredOffices}
-              selectedOffice={activeOfficeForPin}
-              onSelectOffice={(office) => {
-                setActiveOfficeForPin(office);
-                onSelectOffice(office);
-              }}
-            />
-          </div>
-        )}
+            Reset All Filters
+          </button>
+        </div>
+      )}
 
-        {/* List View Column */}
-        {(viewMode === 'both' || viewMode === 'list') && (
-          <div
-            className={`w-full space-y-3.5 ${
-              viewMode === 'list' ? 'lg:col-span-12' : 'lg:col-span-7'
-            }`}
-          >
-            <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-              <span>Found {filteredOffices.length} offices in Bengaluru</span>
-              <span className="text-[11px] text-amber-500 font-semibold">
-                * Pre-seeded sample data clearly marked
-              </span>
-            </div>
+      {/* Office Cards List (390px Phone First) */}
+      {viewMode === 'list' && (
+        <div className="space-y-3">
+          {filteredOffices.map((office) => {
+            const isBookable = office.status === 'bookable';
 
-            {filteredOffices.length === 0 ? (
-              <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-2">
-                <Building className="w-8 h-8 text-slate-400 mx-auto" />
-                <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300">
-                  No matching offices found
-                </h4>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Try clearing your search query or expanding the area filter.
-                </p>
-              </div>
-            ) : (
-              filteredOffices.map((office) => {
-                const isComingSoon = office.status === 'coming_soon';
+            return (
+              <div
+                key={office.id}
+                onClick={() => onSelectOffice(office)}
+                className="cursor-pointer rounded-3xl bg-[#FFFFFF] border-2 border-[#111111]/15 hover:border-[#111111] p-4 sm:p-5 shadow-sm hover:shadow-md transition-all active:scale-[0.99] touch-target space-y-3"
+              >
+                {/* Office Name, Area & Distance */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#F4F0E6] text-[#111111] border border-[#E5E0D5]">
+                        {office.area}
+                      </span>
+                      <span className="text-[10px] font-bold text-[#0B7A4B] flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-[#0B7A4B]" />
+                        <span>~2.4 km away</span>
+                      </span>
+                    </div>
 
-                return (
-                  <div
-                    key={office.id}
-                    onClick={() => {
-                      setActiveOfficeForPin(office);
-                      onSelectOffice(office);
-                    }}
-                    className={`cursor-pointer p-4 sm:p-5 rounded-3xl border bg-white dark:bg-slate-900/90 transition-all duration-200 hover:shadow-lg space-y-3.5 ${
-                      activeOfficeForPin?.id === office.id
-                        ? 'border-amber-500 ring-2 ring-amber-500/20'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-amber-400/50'
+                    <h3 className="text-base font-extrabold text-[#111111] tracking-tight mt-1 font-display leading-snug">
+                      {locale === 'kn' ? office.name_kn : office.name}
+                    </h3>
+                    <p className="text-[11px] text-[#555555] truncate leading-tight mt-0.5">
+                      {office.address}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      isBookable
+                        ? 'bg-[#E6F5ED] text-[#0B7A4B] border border-[#0B7A4B]/30'
+                        : 'bg-[#FFEBE6] text-[#FF5A36] border border-[#FF5A36]/30'
                     }`}
                   >
-                    {/* Header: Type, Area, Status */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                            {office.office_type.replace('_', ' ')}
-                          </span>
-                          <span className="text-xs font-bold text-amber-500">{office.area}</span>
-                        </div>
-                        <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                          {locale === 'kn' ? office.name_kn : office.name}
-                        </h3>
-                        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          <MapPin className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                          <span className="line-clamp-1">{office.address}</span>
-                        </div>
-                      </div>
+                    {isBookable ? '● Bookable' : 'Coming Soon'}
+                  </span>
+                </div>
 
-                      <div className="shrink-0">
-                        {isComingSoon ? (
-                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                            {t.common.comingSoon}
-                          </span>
-                        ) : (
-                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            {t.common.bookableOnly}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                {/* Crowd Meter Display (5-segment Bar + Text) */}
+                <div className="pt-1">
+                  <CrowdStatusCard officeId={office.id} compact={true} />
+                </div>
 
-                    {/* Crowd Status Preview (Honest Provenance) */}
-                    <div>
-                      <CrowdStatusCard officeId={office.id} compact={true} />
-                    </div>
-
-                    {/* Timings & Action Footer */}
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <div className="text-slate-500 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{office.working_hours.mon_fri}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {isComingSoon ? (
-                          <span className="text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1">
-                            <Bell className="w-3.5 h-3.5" />
-                            <span>Notify Me</span>
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onBookOffice(office);
-                            }}
-                            className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shadow-sm transition-colors flex items-center gap-1"
-                          >
-                            <span>{t.common.bookBuddy}</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                {/* Working Hours & Wait Estimate */}
+                <div className="flex items-center justify-between text-[11px] text-[#555555] pt-1 border-t border-[#F4F0E6]">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-[#777777]" />
+                    <span>Counter: {office.working_hours.counter || '10:00 AM - 01:30 PM'}</span>
                   </div>
-                );
-              })
-            )}
+                  <span className="font-mono font-bold text-[#111111]">
+                    Avg wait: 20-30m
+                  </span>
+                </div>
+
+                {/* Card Primary Action Button */}
+                <div className="pt-1">
+                  {isBookable ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onBookOffice(office);
+                      }}
+                      aria-label={`Book buddy for ${office.name}`}
+                      className="w-full py-3 px-4 rounded-xl bg-[#FFD60A] text-[#111111] font-black text-xs flex items-center justify-center gap-2 border-2 border-[#111111] active:scale-[0.98] transition-transform shadow-sm"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{t.common.bookBuddy}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleNotifyMe(e, office.id)}
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#F4F0E6] hover:bg-[#EAE6DF] text-[#111111] font-bold text-xs flex items-center justify-center gap-2 border border-[#E5E0D5] active:scale-[0.98] transition-transform"
+                    >
+                      {notifiedOfficeId === office.id ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-[#0B7A4B]" />
+                          <span className="text-[#0B7A4B]">Demand Registered! We will notify you.</span>
+                        </>
+                      ) : (
+                        <>
+                          <Bell className="w-3.5 h-3.5 text-[#FF5A36]" />
+                          <span>{t.common.notifyMe}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Mobile Slide-Up Bottom-Sheet Filter */}
+      {isFilterSheetOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md bg-[#FFFFFF] rounded-t-3xl border-t-2 border-x-2 border-[#111111] shadow-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto pb-safe animate-in slide-in-from-bottom duration-300"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filter Offices"
+          >
+            {/* Sheet Handle */}
+            <div className="w-12 h-1.5 rounded-full bg-[#E5E0D5] mx-auto -mt-1" />
+
+            <div className="flex items-center justify-between border-b border-[#E5E0D5] pb-3">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-[#111111]" />
+                <h3 className="text-base font-black text-[#111111] font-display">
+                  {t.common.filterTitle}
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsFilterSheetOpen(false)}
+                className="p-1.5 rounded-full hover:bg-[#F4F0E6] text-[#555555]"
+                aria-label="Close filters"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Office Category Filters */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase text-[#555555] tracking-wider font-mono">
+                {t.common.filterByType}
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {officeTypeOptions.map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSelectedType(opt.id)}
+                    className={`p-2.5 rounded-xl border text-left text-xs font-bold flex items-center gap-2 transition-all ${
+                      selectedType === opt.id
+                        ? 'bg-[#FFD60A] text-[#111111] border-[#111111] shadow-sm'
+                        : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
+                    }`}
+                  >
+                    <span>{opt.icon}</span>
+                    <span className="truncate">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Area Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase text-[#555555] tracking-wider font-mono">
+                {t.common.filterByArea}
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {areas.map((a) => (
+                  <button
+                    key={a}
+                    onClick={() => setSelectedArea(a)}
+                    className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                      selectedArea === a
+                        ? 'bg-[#111111] text-[#FFFCF2] border-[#111111]'
+                        : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
+                    }`}
+                  >
+                    {a === 'all' ? 'All Areas' : a}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bookable Now Toggle */}
+            <div className="p-3.5 rounded-2xl bg-[#F4F0E6] border border-[#E5E0D5] flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-[#111111]">
+                  {t.common.bookableOnly}
+                </div>
+                <div className="text-[10px] text-[#555555]">
+                  Only show offices ready for live buddy booking
+                </div>
+              </div>
+              <button
+                onClick={() => setBookableOnly(!bookableOnly)}
+                className={`w-12 h-6 rounded-full transition-colors p-0.5 border ${
+                  bookableOnly
+                    ? 'bg-[#0B7A4B] border-[#0B7A4B]'
+                    : 'bg-[#E5E0D5] border-[#CCCCCC]'
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                    bookableOnly ? 'translate-x-6' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Sticky Sheet Actions */}
+            <div className="pt-2 flex gap-2">
+              <button
+                onClick={() => {
+                  setSelectedType('all');
+                  setSelectedArea('all');
+                  setBookableOnly(false);
+                  setCrowdFilter('all');
+                }}
+                className="py-3 px-4 rounded-xl bg-[#F4F0E6] text-[#111111] font-bold text-xs border border-[#E5E0D5] hover:bg-[#EAE6DF] active:scale-95 transition-all touch-target"
+              >
+                {t.common.resetFilters}
+              </button>
+              <button
+                onClick={() => setIsFilterSheetOpen(false)}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#FFD60A] text-[#111111] font-black text-xs border-2 border-[#111111] shadow-md active:scale-95 transition-all touch-target flex items-center justify-center gap-1.5"
+              >
+                <span>{t.common.applyFilters}</span>
+                <span className="font-mono">({filteredOffices.length})</span>
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { SupportedLanguage } from '@/types';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   User,
   Mail,
@@ -17,17 +18,21 @@ import {
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
+  Moon,
+  Sun,
 } from 'lucide-react';
 
 export default function AccountPage() {
   const { user, signOut, deleteAccountAndData } = useAuth();
   const { locale, setLocale, t } = useApp();
+  const router = useRouter();
 
   const [preferredLang, setPreferredLang] = useState<SupportedLanguage>('Kannada');
   const [eveningReminders, setEveningReminders] = useState(true);
   const [queuePings, setQueuePings] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   const handleSavePreferences = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,16 +42,26 @@ export default function AccountPage() {
 
   const handleDeleteAccount = async () => {
     await deleteAccountAndData();
+    router.push('/');
+  };
+
+  const toggleTheme = () => {
+    const nextDark = !isDark;
+    setIsDark(nextDark);
+    if (typeof document !== 'undefined') {
+      if (nextDark) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    }
   };
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FFFCF2] text-[#111111] flex items-center justify-center p-4">
         <div className="text-center space-y-3">
-          <p className="text-sm text-slate-400">Please sign in to view your account.</p>
+          <p className="text-sm text-[#555555]">Please sign in to view your account.</p>
           <Link
             href="/login"
-            className="px-5 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs inline-block"
+            className="px-5 py-2.5 rounded-2xl bg-[#FFD60A] text-[#111111] font-black text-xs inline-block border-2 border-[#111111]"
           >
             Go to Login
           </Link>
@@ -56,195 +71,214 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
+    <div className="min-h-screen bg-[#FFFCF2] text-[#111111] pb-16 flex flex-col">
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="w-full max-w-md mx-auto px-4 py-4 space-y-4">
         {/* Back navigation */}
         <div className="flex items-center justify-between">
           <Link
-            href="/app"
-            className="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
+            href="/"
+            className="text-xs text-[#555555] hover:text-[#111111] flex items-center gap-1.5 transition-colors font-bold"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Dashboard</span>
+            <span>Back to Home</span>
           </Link>
 
           <button
             onClick={signOut}
-            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors"
+            className="px-3 py-1.5 rounded-xl bg-[#F4F0E6] hover:bg-[#EAE6DF] text-xs font-bold text-[#111111] border border-[#E5E0D5] transition-colors"
           >
             Sign Out
           </button>
         </div>
 
         {/* Profile Card */}
-        <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 text-slate-950 font-black text-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-              {user.full_name.charAt(0)}
+        <div className="p-5 rounded-3xl bg-[#FFFFFF] border-2 border-[#111111] shadow-md space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-[#FFD60A] border-2 border-[#111111] text-[#111111] font-black text-2xl flex items-center justify-center shadow-sm">
+              {user.full_name?.charAt(0) || 'U'}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-white">{user.full_name}</h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wide">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-base font-black text-[#111111] font-display truncate">
+                  {user.full_name}
+                </h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E6F5ED] text-[#0B7A4B] border border-[#0B7A4B]/20 uppercase">
                   {user.role}
                 </span>
               </div>
-              <div className="text-xs text-slate-400 mt-0.5">{user.email}</div>
-              {user.phone && <div className="text-xs text-slate-500 mt-0.5">{user.phone}</div>}
+              <div className="text-xs text-[#555555] truncate mt-0.5">{user.email}</div>
+              {user.phone && <div className="text-[11px] font-mono text-[#777777]">{user.phone}</div>}
             </div>
           </div>
         </div>
 
-        {/* Settings Form */}
-        <form
-          onSubmit={handleSavePreferences}
-          className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-5"
-        >
-          <div className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Globe className="w-3.5 h-3.5" />
-            <span>Language & Notification Preferences</span>
-          </div>
+        {/* Settings & Language Form */}
+        <form onSubmit={handleSavePreferences} className="space-y-4">
+          <div className="p-4 sm:p-5 rounded-3xl bg-[#FFFFFF] border-2 border-[#111111]/15 shadow-sm space-y-4">
+            <h3 className="text-xs font-mono font-black uppercase text-[#111111] tracking-wider">
+              LANGUAGE & PREFERENCES
+            </h3>
 
-          {saveSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs font-semibold flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
-              Preferences saved successfully!
-            </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Default App & Counter Language
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {(['Kannada', 'English', 'Hindi', 'Tamil', 'Telugu'] as SupportedLanguage[]).map((lang) => (
+            {/* App UI Language */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[#111111] flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-[#0B7A4B]" />
+                <span>Application Language</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
                 <button
-                  key={lang}
                   type="button"
-                  onClick={() => setPreferredLang(lang)}
-                  className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between ${
-                    preferredLang === lang
-                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
-                      : 'border-slate-800 bg-slate-800/60 text-slate-400 hover:text-white'
+                  onClick={() => setLocale('en')}
+                  className={`py-2 px-3 rounded-xl border-2 font-bold text-xs transition-all touch-target ${
+                    locale === 'en'
+                      ? 'bg-[#FFD60A] text-[#111111] border-[#111111]'
+                      : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5]'
                   }`}
                 >
-                  <span>{lang}</span>
-                  {preferredLang === lang && <CheckCircle2 className="w-3.5 h-3.5 text-amber-500" />}
+                  English
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setLocale('kn')}
+                  className={`py-2 px-3 rounded-xl border-2 font-bold text-xs transition-all touch-target ${
+                    locale === 'kn'
+                      ? 'bg-[#FFD60A] text-[#111111] border-[#111111]'
+                      : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5]'
+                  }`}
+                >
+                  ಕನ್ನಡ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocale('hi')}
+                  className={`py-2 px-3 rounded-xl border-2 font-bold text-xs transition-all touch-target ${
+                    locale === 'hi'
+                      ? 'bg-[#FFD60A] text-[#111111] border-[#111111]'
+                      : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5]'
+                  }`}
+                >
+                  हिंदी
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-3 pt-3 border-t border-slate-800">
-            <label className="block text-xs font-semibold text-slate-300">
-              Notification Channels
-            </label>
-
-            <label className="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer">
-              <div className="text-xs">
-                <span className="font-bold text-slate-200 block">Evening Document Checklist Alert</span>
-                <span className="text-[11px] text-slate-400">
-                  Daily 7:00 PM IST reminder if any mandatory documents are missing for tomorrow.
-                </span>
+            {/* Optional Dark Mode Switch */}
+            <div className="pt-2 border-t border-[#E5E0D5] flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-[#111111]">Dark Mode</div>
+                <div className="text-[10px] text-[#555555]">Optional setting (Default is Chalk Light)</div>
               </div>
-              <input
-                type="checkbox"
-                checked={eveningReminders}
-                onChange={(e) => setEveningReminders(e.target.checked)}
-                className="w-4 h-4 accent-amber-500"
-              />
-            </label>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="p-2 rounded-xl bg-[#F4F0E6] border border-[#E5E0D5] text-[#111111] text-xs font-bold flex items-center gap-1.5 touch-target"
+              >
+                {isDark ? <Sun className="w-4 h-4 text-[#FFD60A]" /> : <Moon className="w-4 h-4" />}
+                <span>{isDark ? 'Light' : 'Dark'}</span>
+              </button>
+            </div>
 
-            <label className="flex items-center justify-between p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer">
-              <div className="text-xs">
-                <span className="font-bold text-slate-200 block">Live Queue Arrival Pings</span>
-                <span className="text-[11px] text-slate-400">
-                  Instant push notification when your buddy alerts that only 2–3 tokens remain.
-                </span>
+            {/* Notifications */}
+            <div className="space-y-2 pt-2 border-t border-[#E5E0D5]">
+              <label className="text-xs font-bold text-[#111111] flex items-center gap-1.5">
+                <Bell className="w-3.5 h-3.5 text-[#FFD60A]" />
+                <span>SMS & WhatsApp Pings</span>
+              </label>
+
+              <div className="flex items-center justify-between text-xs py-1">
+                <div>
+                  <div className="font-semibold text-[#111111]">Evening Document Reminder</div>
+                  <div className="text-[10px] text-[#555555]">Alerts at 7 PM IST if docs missing</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={eveningReminders}
+                  onChange={(e) => setEveningReminders(e.target.checked)}
+                  className="w-4 h-4 accent-[#0B7A4B]"
+                />
               </div>
-              <input
-                type="checkbox"
-                checked={queuePings}
-                onChange={(e) => setQueuePings(e.target.checked)}
-                className="w-4 h-4 accent-amber-500"
-              />
-            </label>
-          </div>
 
-          <button
-            type="submit"
-            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition-colors shadow-sm"
-          >
-            Save Preferences
-          </button>
+              <div className="flex items-center justify-between text-xs py-1">
+                <div>
+                  <div className="font-semibold text-[#111111]">Live Queue Call Pings</div>
+                  <div className="text-[10px] text-[#555555]">Urgent summon when 3 people ahead</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={queuePings}
+                  onChange={(e) => setQueuePings(e.target.checked)}
+                  className="w-4 h-4 accent-[#0B7A4B]"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 rounded-2xl bg-[#FFD60A] text-[#111111] font-black text-xs border-2 border-[#111111] shadow-sm active:scale-95 transition-transform touch-target"
+            >
+              Save Preferences
+            </button>
+
+            {saveSuccess && (
+              <div className="text-center text-xs font-bold text-[#0B7A4B] animate-in fade-in">
+                ✓ Preferences updated successfully
+              </div>
+            )}
+          </div>
         </form>
 
-        {/* DPDP Compliance / Danger Zone */}
-        <div className="p-6 rounded-3xl bg-rose-950/20 border border-rose-900/40 shadow-xl space-y-4">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
-              <Trash2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-rose-300">
-                Data Protection & Account Deletion (DPDP Act Compliant)
-              </h2>
-              <p className="text-xs text-rose-300/80 mt-1 leading-relaxed">
-                Under the Digital Personal Data Protection Act, you have the absolute right to
-                erasure. Requesting deletion immediately and permanently erases your profile, phone
-                number, booking records, and KYC data from QueueBuddy servers.
-              </p>
-            </div>
+        {/* DPDP Compliance & Account Erasure */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#FFFFFF] border-2 border-[#111111]/15 shadow-sm space-y-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#0B7A4B]" />
+            <h3 className="text-xs font-black uppercase text-[#111111] tracking-wider font-mono">
+              DPDP COMPLIANCE & PRIVACY
+            </h3>
           </div>
+          <p className="text-[11px] text-[#555555] leading-relaxed">
+            Under India&apos;s Digital Personal Data Protection (DPDP) Act, your privacy is protected. QueueBuddy never stores confidential citizen documents. You can erase all personal booking history anytime.
+          </p>
 
           <button
-            type="button"
             onClick={() => setShowDeleteModal(true)}
-            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5"
+            className="w-full py-2.5 px-3 rounded-xl bg-[#FFEBE6] text-[#FF5A36] border border-[#FF5A36]/30 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-transform touch-target"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete My Account & Erase All Data</span>
+            <span>Delete Account & Stored Data</span>
           </button>
         </div>
-      </main>
 
-      {/* Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-rose-900/60 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-base font-bold text-white">Permanently Delete Account?</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                This action is irreversible. All your active queues, history, and personal data will
-                be wiped immediately.
+        {/* Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+            <div className="w-full max-w-sm p-5 rounded-3xl bg-white border-2 border-[#111111] shadow-2xl space-y-3">
+              <div className="flex items-center gap-2 text-[#FF5A36] font-black text-sm">
+                <AlertTriangle className="w-5 h-5" />
+                <span>Confirm Data Erasure</span>
+              </div>
+              <p className="text-xs text-[#555555] leading-relaxed">
+                This will permanently delete your profile, active tokens, and contact details from the local database. This action cannot be undone.
               </p>
-            </div>
-
-            <div className="flex gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteAccount}
-                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors"
-              >
-                Confirm Erase
-              </button>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-[#F4F0E6] text-[#111111] font-bold text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="flex-1 py-2.5 rounded-xl bg-[#FF5A36] text-white font-black text-xs shadow-md"
+                >
+                  Erase Data
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }

@@ -6,14 +6,14 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface OfficeMapProps {
   offices: Office[];
-  selectedOffice: Office | null;
+  selectedOffice?: Office | null;
   onSelectOffice: (office: Office) => void;
   provider?: 'osm' | 'maptiler' | 'mapbox';
 }
 
 export const OfficeMap: React.FC<OfficeMapProps> = ({
   offices,
-  selectedOffice,
+  selectedOffice = null,
   onSelectOffice,
   provider = (process.env.NEXT_PUBLIC_MAP_PROVIDER as any) || 'osm',
 }) => {

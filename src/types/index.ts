@@ -59,6 +59,7 @@ export type BookingStatus =
   | 'assigned'
   | 'buddy_arrived'
   | 'in_queue'
+  | 'customer_traveling'
   | 'customer_summoned'
   | 'handover_completed'
   | 'cancelled';

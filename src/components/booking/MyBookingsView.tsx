@@ -5,19 +5,22 @@ import { Booking } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { LiveQueueTracker } from './LiveQueueTracker';
 import { DocumentChecklist } from './DocumentChecklist';
+import { EmptyIllustration } from '@/components/illustrations/EmptyIllustration';
 import {
   Ticket,
   MapPin,
   Calendar,
   Clock,
   FileCheck,
-  ChevronRight,
-  ArrowLeft,
-  ShieldCheck,
   Compass,
+  Sparkles,
 } from 'lucide-react';
 
-export const MyBookingsView: React.FC = () => {
+interface MyBookingsViewProps {
+  onBookNew?: () => void;
+}
+
+export const MyBookingsView: React.FC<MyBookingsViewProps> = ({ onBookNew }) => {
   const { bookings, checklists, toggleChecklistItem, t, locale } = useApp();
 
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
@@ -30,16 +33,40 @@ export const MyBookingsView: React.FC = () => {
     ? checklists.filter((c) => c.service_id === selectedBooking.service_id)
     : [];
 
+  if (bookings.length === 0) {
+    return (
+      <div className="max-w-md mx-auto p-8 rounded-3xl bg-[#FFFFFF] border-2 border-[#111111]/15 text-center space-y-4 flex flex-col items-center">
+        <EmptyIllustration className="w-40 h-40" />
+        <div className="space-y-1">
+          <h3 className="text-lg font-black text-[#111111] font-display">
+            No Active Bookings Yet
+          </h3>
+          <p className="text-xs text-[#555555] max-w-xs">
+            Book a verified Queue Buddy at any Bengaluru government office and your live token will appear here.
+          </p>
+        </div>
+        {onBookNew && (
+          <button
+            onClick={onBookNew}
+            className="py-3 px-5 rounded-2xl bg-[#FFD60A] text-[#111111] font-black text-xs border-2 border-[#111111] shadow-md active:scale-95 transition-transform"
+          >
+            Book a Buddy Now
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-5 max-w-3xl mx-auto">
-      {/* Bookings Selector Horizontal Scroll */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-          <span className="font-bold uppercase tracking-wider">Your Queue Appointments</span>
-          <span>{bookings.length} total</span>
+    <div className="space-y-4 max-w-md mx-auto">
+      {/* Bookings Carousel Pills */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-[11px] font-mono text-[#555555] px-1 font-bold">
+          <span className="uppercase">YOUR APPOINTMENTS ({bookings.length})</span>
+          <span>Tap to switch</span>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {bookings.map((booking) => {
             const isSelected = selectedBookingId === booking.id;
             const checkedCount = booking.checklist_progress?.length || 0;
@@ -49,30 +76,28 @@ export const MyBookingsView: React.FC = () => {
               <div
                 key={booking.id}
                 onClick={() => setSelectedBookingId(booking.id)}
-                className={`cursor-pointer min-w-[240px] p-3.5 rounded-2xl border transition-all shrink-0 ${
+                className={`cursor-pointer min-w-[200px] p-3 rounded-2xl border-2 transition-all shrink-0 active:scale-95 touch-target ${
                   isSelected
-                    ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/20'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-400'
+                    ? 'border-[#111111] bg-[#FFD60A] text-[#111111] shadow-md'
+                    : 'border-[#E5E0D5] bg-[#FFFFFF] text-[#111111] hover:border-[#111111]/30'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-amber-500">
-                    {booking.booking_code}
+                  <span className="text-xs font-mono font-black">
+                    {booking.token_number || booking.booking_code}
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                    {booking.status.replace('_', ' ')}
+                  <span
+                    className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                      isSelected ? 'bg-black text-[#FFD60A]' : 'bg-[#F4F0E6] text-[#555555]'
+                    }`}
+                  >
+                    {t.status[booking.status] || booking.status}
                   </span>
                 </div>
-                <h4 className="font-bold text-xs text-slate-900 dark:text-white mt-1.5 truncate">
+                <h4 className="font-extrabold text-xs mt-1 truncate font-display">
                   {booking.service.title}
                 </h4>
-                <div className="text-[11px] text-slate-400 truncate">{booking.office.name}</div>
-                <div className="text-[10px] text-emerald-500 font-semibold mt-1 flex items-center gap-1">
-                  <FileCheck className="w-3 h-3" />
-                  <span>
-                    {checkedCount}/{totalDocs} documents ready
-                  </span>
-                </div>
+                <div className="text-[10px] text-current/80 truncate">{booking.office.name}</div>
               </div>
             );
           })}
@@ -82,32 +107,32 @@ export const MyBookingsView: React.FC = () => {
       {/* Selected Booking View Mode Toggle */}
       {selectedBooking && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-1 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center p-1 rounded-2xl bg-[#F4F0E6] border border-[#E5E0D5]">
             <button
               onClick={() => setViewMode('tracker')}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 touch-target ${
                 viewMode === 'tracker'
-                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-[#111111] text-[#FFFCF2] shadow-sm font-black'
+                  : 'text-[#666666] hover:text-[#111111]'
               }`}
             >
-              <Compass className="w-4 h-4" />
-              <span>Live Queue Tracking</span>
+              <Compass className="w-4 h-4 text-[#FFD60A]" />
+              <span>Taxi-Meter Tracker</span>
             </button>
             <button
               onClick={() => setViewMode('checklist')}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 touch-target ${
                 viewMode === 'checklist'
-                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-[#111111] text-[#FFFCF2] shadow-sm font-black'
+                  : 'text-[#666666] hover:text-[#111111]'
               }`}
             >
-              <FileCheck className="w-4 h-4" />
-              <span>Document Checklist ({bookingChecklistItems.length})</span>
+              <FileCheck className="w-4 h-4 text-[#0B7A4B]" />
+              <span>Doc Checklist</span>
             </button>
           </div>
 
-          {/* View Render */}
+          {/* Active View: Tracker or Checklist */}
           {viewMode === 'tracker' ? (
             <LiveQueueTracker
               booking={selectedBooking}
