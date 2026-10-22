@@ -10,6 +10,7 @@
     "cap:sync": "cap sync android",
     "cap:open": "cap open android",
     "cap:run": "cap run android",
+    "cap:run:local": "CAPACITOR_SERVER_URL=http://10.0.2.2:3000 cap run android",
     "cap:build": "cd android && ./gradlew assembleDebug",
     "cap:bundle": "cd android && ./gradlew bundleRelease"
   },

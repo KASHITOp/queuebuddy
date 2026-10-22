@@ -29,3 +29,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env
+
+# Android release signing (never commit)
+*.jks
+*.keystore
+keystore.properties
