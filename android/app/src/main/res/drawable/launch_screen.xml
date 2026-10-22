@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pre-Android 12 launch screen: midnight background with the yellow app badge. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/qb_night" />
+    <item android:gravity="center" android:width="112dp" android:height="112dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/qb_yellow" />
+        </shape>
+    </item>
+    <item android:gravity="center" android:width="168dp" android:height="168dp" android:drawable="@drawable/ic_launcher_foreground" />
+</layer-list>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   Office,
   Service,
@@ -24,6 +24,28 @@ import {
   INITIAL_DISPUTES,
 } from '@/lib/data';
 import { Locale, translations } from '@/lib/i18n';
+import { isSupabaseConfigured } from '@/lib/supabase';
+
+const BOOKINGS_KEY = 'qb_bookings_v2';
+const DEMANDS_KEY = 'qb_demands';
+const LOCALE_KEY = 'qb_locale';
+
+// Demo queue simulation: how often a buddy "reports" the line moving.
+const QUEUE_TICK_MS = 9000;
+const SUMMON_AT = 3;
+
+export interface AppToast {
+  kind: 'info' | 'success' | 'alert';
+  title: string;
+  body?: string;
+}
+
+/** Fire-and-forget toast; the app shell listens for this event and shows a banner. */
+export const emitToast = (toast: AppToast) => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent<AppToast>('qb:toast', { detail: toast }));
+  }
+};
 
 interface AppContextType {
   role: UserRole;
@@ -80,6 +102,7 @@ interface AppContextType {
   addOffice: (office: Omit<Office, 'id' | 'last_verified_date'>) => void;
   addService: (service: Omit<Service, 'id'>) => void;
   addChecklistItem: (item: Omit<DocumentChecklistItem, 'id'>) => void;
+  resetDemo: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -96,45 +119,113 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [demands, setDemands] = useState<OfficeDemand[]>([]);
   const [disputes, setDisputes] = useState<Dispute[]>(INITIAL_DISPUTES);
   const [activeBookingId, setActiveBookingId] = useState<string | null>('book-1');
+  const [hydrated, setHydrated] = useState(false);
+  const bookingsRef = useRef(bookings);
+  bookingsRef.current = bookings;
 
   // Load persisted demo data from local storage if available
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const savedBookings = localStorage.getItem('qb_bookings');
-        if (savedBookings) setBookings(JSON.parse(savedBookings));
+    try {
+      const savedBookings = localStorage.getItem(BOOKINGS_KEY);
+      if (savedBookings) setBookings(JSON.parse(savedBookings));
 
-        const savedDemands = localStorage.getItem('qb_demands');
-        if (savedDemands) setDemands(JSON.parse(savedDemands));
+      const savedDemands = localStorage.getItem(DEMANDS_KEY);
+      if (savedDemands) setDemands(JSON.parse(savedDemands));
 
-        const savedLocale = localStorage.getItem('qb_locale') as Locale;
-        if (savedLocale) setLocale(savedLocale);
-      } catch (e) {
-        console.error('Error loading local state', e);
-      }
+      const savedLocale = localStorage.getItem(LOCALE_KEY) as Locale;
+      if (savedLocale) setLocale(savedLocale);
+    } catch (e) {
+      console.error('Error loading local state', e);
     }
+    setHydrated(true);
   }, []);
 
-  // Save changes to local storage
-  const persistBookings = (newBookings: Booking[]) => {
-    setBookings(newBookings);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('qb_bookings', JSON.stringify(newBookings));
+  // Persist after hydration so the seed never overwrites saved data.
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
+    } catch {
+      // Storage full or blocked: the demo keeps working in memory.
     }
-  };
+  }, [bookings, hydrated]);
 
-  const persistDemands = (newDemands: OfficeDemand[]) => {
-    setDemands(newDemands);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('qb_demands', JSON.stringify(newDemands));
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(DEMANDS_KEY, JSON.stringify(demands));
+    } catch {
+      // Ignore storage errors in demo mode.
     }
-  };
+  }, [demands, hydrated]);
+
+  // Demo mode: buddies "report" progress so the live token actually moves.
+  useEffect(() => {
+    if (!hydrated || isSupabaseConfigured()) return;
+
+    const timer = window.setInterval(() => {
+      const toasts: AppToast[] = [];
+      let changed = false;
+      const now = new Date().toISOString();
+
+      const next = bookingsRef.current.map((b) => {
+        // Only bookings made in this session start moving on their own; older seeded ones stay put.
+        const isFresh = Date.now() - new Date(b.created_at).getTime() < 6 * 3600 * 1000;
+        if (b.status === 'assigned' && isFresh) {
+          changed = true;
+          toasts.push({
+            kind: 'info',
+            title: `${b.buddy?.full_name || 'Your buddy'} reached the office`,
+            body: b.office.name,
+          });
+          return { ...b, status: 'buddy_arrived' as BookingStatus, updated_at: now };
+        }
+        if (b.status === 'buddy_arrived') {
+          changed = true;
+          const token = `${b.office.area.slice(0, 2).toUpperCase()}-${Math.floor(20 + Math.random() * 70)}`;
+          const ahead = 9 + Math.floor(Math.random() * 5);
+          toasts.push({ kind: 'success', title: `Token ${token} secured`, body: `${ahead} people ahead of you` });
+          return { ...b, status: 'in_queue' as BookingStatus, token_number: token, people_ahead: ahead, updated_at: now };
+        }
+        const live = b.status === 'in_queue' || b.status === 'customer_summoned' || b.status === 'customer_traveling';
+        if (!live || (b.people_ahead ?? 0) <= 0) return b;
+
+        changed = true;
+        const ahead = (b.people_ahead ?? 1) - 1;
+        let status: BookingStatus = b.status;
+        if (ahead === 0) {
+          status = 'handover_completed';
+          toasts.push({ kind: 'success', title: "It's your turn!", body: `Meet your buddy at the counter • ${b.token_number}` });
+        } else if (ahead <= SUMMON_AT && b.status === 'in_queue') {
+          status = 'customer_summoned';
+          toasts.push({ kind: 'alert', title: `Only ${ahead} ahead — head out now`, body: b.office.name });
+        }
+        return { ...b, people_ahead: ahead, status, updated_at: now };
+      });
+
+      if (changed) {
+        setBookings(next);
+        toasts.forEach(emitToast);
+      }
+    }, QUEUE_TICK_MS);
+
+    return () => window.clearInterval(timer);
+  }, [hydrated]);
 
   const handleSetLocale = (newLocale: Locale) => {
     setLocale(newLocale);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('qb_locale', newLocale);
+    try {
+      localStorage.setItem(LOCALE_KEY, newLocale);
+    } catch {
+      // Ignore storage errors.
     }
+  };
+
+  const resetDemo = () => {
+    setBookings(INITIAL_BOOKINGS);
+    setDemands([]);
+    setCrowdReports(INITIAL_CROWD_REPORTS);
+    setActiveBookingId('book-1');
   };
 
   const createBooking = (data: {
@@ -194,8 +285,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updated_at: new Date().toISOString(),
     };
 
-    const updated = [newBooking, ...bookings];
-    persistBookings(updated);
+    setBookings((prev) => [newBooking, ...prev]);
     setActiveBookingId(newBooking.id);
     return newBooking;
   };
@@ -205,36 +295,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     status: BookingStatus,
     extra?: Partial<Booking>
   ) => {
-    const updated = bookings.map((b) => {
-      if (b.id === bookingId) {
-        return {
-          ...b,
-          status,
-          ...extra,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      return b;
-    });
-    persistBookings(updated);
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === bookingId ? { ...b, status, ...extra, updated_at: new Date().toISOString() } : b
+      )
+    );
   };
 
   const toggleChecklistItem = (bookingId: string, itemId: string) => {
-    const updated = bookings.map((b) => {
-      if (b.id === bookingId) {
+    setBookings((prev) =>
+      prev.map((b) => {
+        if (b.id !== bookingId) return b;
         const current = b.checklist_progress || [];
         const next = current.includes(itemId)
           ? current.filter((id) => id !== itemId)
           : [...current, itemId];
-        return {
-          ...b,
-          checklist_progress: next,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      return b;
-    });
-    persistBookings(updated);
+        return { ...b, checklist_progress: next, updated_at: new Date().toISOString() };
+      })
+    );
   };
 
   const updateQueueLiveStatus = (
@@ -287,7 +365,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       reporter_name: source === 'buddy_report' ? 'Verified Buddy' : 'App User',
       notes,
     };
-    setCrowdReports([newReport, ...crowdReports]);
+    setCrowdReports((prev) => [newReport, ...prev]);
   };
 
   const registerDemand = (officeId: string, contact: string, service?: string) => {
@@ -298,8 +376,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       service_interest: service,
       created_at: new Date().toISOString(),
     };
-    const updated = [newDemand, ...demands];
-    persistDemands(updated);
+    setDemands((prev) => [newDemand, ...prev]);
   };
 
   const verifyBuddy = (buddyId: string, status: 'verified' | 'rejected') => {
@@ -372,6 +449,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addOffice,
         addService,
         addChecklistItem,
+        resetDemo,
       }}
     >
       {children}

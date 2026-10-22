@@ -4,72 +4,57 @@
 
 @layer base {
   :root {
-    /* Chalk #FFFCF2, Meter Black #111111, Rickshaw Yellow #FFD60A, Auto Green #0B7A4B, Coral #FF5A36 */
-    --background: 44 100% 97.5%; /* #FFFCF2 */
-    --foreground: 0 0% 6.7%;     /* #111111 */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 6.7%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 6.7%;
-    --primary: 49 100% 52%;       /* #FFD60A Rickshaw Yellow */
-    --primary-foreground: 0 0% 6.7%; /* #111111 */
-    --secondary: 154 83% 26%;     /* #0B7A4B Auto Green */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 42 35% 93%;          /* #F4F0E6 */
-    --muted-foreground: 0 0% 40%;  /* Neutral readable text */
-    --accent: 49 100% 52%;
-    --accent-foreground: 0 0% 6.7%;
-    --destructive: 11 100% 61%;   /* #FF5A36 Coral */
-    --destructive-foreground: 0 0% 100%;
-    --border: 40 20% 87%;         /* #E5E0D5 */
-    --input: 40 20% 87%;
-    --ring: 49 100% 52%;
-    --radius: 1.25rem;
-  }
-
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 224 71% 7%;
-    --card-foreground: 210 40% 98%;
-    --popover: 224 71% 7%;
-    --popover-foreground: 210 40% 98%;
+    /* Midnight #09090B, Ink #FAFAF7, Rickshaw Yellow #FFD60A, Mint #3DDC97, Coral #FF6B4A */
+    --background: 240 10% 4%;
+    --foreground: 60 20% 97%;
+    --card: 240 7% 8%;
+    --card-foreground: 60 20% 97%;
+    --popover: 240 7% 8%;
+    --popover-foreground: 60 20% 97%;
     --primary: 49 100% 52%;
     --primary-foreground: 0 0% 6.7%;
-    --secondary: 154 83% 26%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 15%;
-    --muted-foreground: 215 20% 65%;
+    --secondary: 154 70% 55%;
+    --secondary-foreground: 0 0% 6.7%;
+    --muted: 240 6% 12%;
+    --muted-foreground: 240 4% 57%;
     --accent: 49 100% 52%;
     --accent-foreground: 0 0% 6.7%;
-    --destructive: 11 100% 61%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
+    --destructive: 11 100% 65%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 16%;
+    --input: 240 6% 16%;
     --ring: 49 100% 52%;
+    --radius: 1.25rem;
+
+    /* Safe areas: Capacitor 8 injects --safe-area-inset-* on Android; browsers use env(). */
+    --sat: max(env(safe-area-inset-top), var(--safe-area-inset-top, 0px));
+    --sab: max(env(safe-area-inset-bottom), var(--safe-area-inset-bottom, 0px));
+
+    color-scheme: dark;
   }
 
   * {
     border-color: hsl(var(--border));
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html,
+  body {
+    background-color: #09090b;
+    color: #fafaf7;
+    overscroll-behavior: none;
   }
 
   body {
-    background-color: #FFFCF2;
-    color: #111111;
     font-family: var(--font-onest), var(--font-archivo), system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-  }
-
-  .dark body {
-    background-color: #080b11;
-    color: #f8fafc;
+    min-height: 100dvh;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-archivo), var(--font-onest), sans-serif;
     letter-spacing: -0.02em;
-    line-height: 1.25;
+    line-height: 1.2;
   }
 
   code, pre, .font-mono {
@@ -80,64 +65,132 @@
     text-decoration: none;
     color: inherit;
   }
-}
 
-/* Safe area insets for mobile devices */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 1rem);
-}
-
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
-}
-
-/* Taxi-meter digit card style */
-.taxi-meter-display {
-  background: #111111;
-  color: #FFD60A;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.15);
-  border: 2px solid #222222;
-}
-
-/* Flip card animation for meter */
-@keyframes meter-flip {
-  0% {
-    transform: rotateX(0deg);
-  }
-  50% {
-    transform: rotateX(90deg);
-    opacity: 0.5;
-  }
-  100% {
-    transform: rotateX(0deg);
-    opacity: 1;
+  button {
+    touch-action: manipulation;
   }
 }
 
-.animate-meter-flip {
-  animation: meter-flip 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-style: preserve-3d;
+@layer components {
+  /* The customer app is a fixed shell: only screen bodies scroll, never the page. */
+  .app-shell {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .app-shell input,
+  .app-shell textarea {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .screen-scroll {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .screen-scroll::-webkit-scrollbar,
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .pt-safe {
+    padding-top: var(--sat);
+  }
+
+  .pb-safe {
+    padding-bottom: var(--sab);
+  }
+
+  .glass {
+    background: rgba(17, 17, 20, 0.72);
+    backdrop-filter: saturate(160%) blur(20px);
+    -webkit-backdrop-filter: saturate(160%) blur(20px);
+  }
+
+  .hairline {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  }
+
+  .meter-digits {
+    font-family: var(--font-martian-mono), monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+  }
+
+  .text-gradient-brand {
+    background: linear-gradient(100deg, #fff3a3 0%, #ffd60a 45%, #ffb703 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+}
+
+/* Dark basemap from light OSM tiles; markers are DOM nodes, so they keep their colours. */
+.night-map .maplibregl-canvas {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.6);
+}
+
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgba(17, 17, 20, 0.8) !important;
+  color: #8b8b94;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: #c9c9cf !important;
 }
 
 /* 44px+ minimum touch target for mobile thumb comfort */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
+}
+
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(61, 220, 151, 0.55); }
+  70% { box-shadow: 0 0 0 10px rgba(61, 220, 151, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(61, 220, 151, 0); }
+}
+
+.live-dot {
+  animation: live-pulse 1.8s ease-out infinite;
+}
+
+@keyframes sheen {
+  0% { transform: translateX(-120%) skewX(-20deg); }
+  60%, 100% { transform: translateX(220%) skewX(-20deg); }
+}
+
+.sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: sheen 3.2s ease-in-out infinite;
+  pointer-events: none;
 }
 
 /* Respect user's preference for reduced motion */
@@ -159,13 +212,5 @@
 
   header, nav, footer, button, .print\:hidden {
     display: none !important;
-  }
-
-  .print\:block {
-    display: block !important;
-  }
-
-  .print\:p-0 {
-    padding: 0 !important;
   }
 }

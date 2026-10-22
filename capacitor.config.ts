@@ -1,32 +1,35 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-// Pointing to deployed Vercel URL ensures Supabase Auth, Google OAuth,
-// API routes (/api/webhooks/razorpay), and Realtime work without broken WebView schemes.
-// CAPACITOR_SERVER_URL overrides the target for local testing, e.g. http://10.0.2.2:3000
-// (10.0.2.2 is the host machine's localhost as seen from the Android emulator).
-const isLiveServer = process.env.CAPACITOR_LIVE !== 'false';
-const vercelUrl =
-  process.env.CAPACITOR_SERVER_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://queuebuddy-amber.vercel.app';
+// By default the APK bundles the static export in dist-mobile/ (npm run build:mobile), so it opens instantly and works offline.
+// Set CAPACITOR_SERVER_URL to load a live site instead, e.g. http://10.0.2.2:3000 for the emulator
+// (10.0.2.2 is the host machine's localhost) or https://queuebuddy-amber.vercel.app for real Supabase Auth/OAuth.
+const serverUrl = process.env.CAPACITOR_SERVER_URL;
 
 const config: CapacitorConfig = {
   appId: 'com.queuebuddy.app',
   appName: 'QueueBuddy',
-  webDir: 'public',
-  server: isLiveServer
+  webDir: 'dist-mobile',
+  backgroundColor: '#09090B',
+  server: serverUrl
     ? {
-        url: vercelUrl,
-        cleartext: true,
+        url: serverUrl,
+        cleartext: serverUrl.startsWith('http://'),
       }
-    : undefined,
+    : {
+        androidScheme: 'https',
+      },
   plugins: {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
+    SystemBars: {
+      insetsHandling: 'css',
+    },
   },
   android: {
-    allowMixedContent: true,
+    allowMixedContent: !!serverUrl,
     captureInput: true,
-    webContentsDebuggingEnabled: true,
+    webContentsDebuggingEnabled: !!serverUrl,
   },
 };
 

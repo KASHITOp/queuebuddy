@@ -262,6 +262,26 @@ export const INITIAL_SERVICES: Service[] = [
     queue_buddy_base_fee: 299,
     estimated_wait_minutes: 80,
   },
+  {
+    id: 'srv-9',
+    office_id: 'off-4',
+    title: 'Property Registration Token & Document Scrutiny',
+    title_kn: 'ಆಸ್ತಿ ನೋಂದಣಿ ಟೋಕನ್ ಮತ್ತು ದಾಖಲೆ ಪರಿಶೀಲನೆ',
+    description: 'Buddy collects the registration token and holds your place until the scrutiny desk calls your slot.',
+    government_fee: 300,
+    queue_buddy_base_fee: 399,
+    estimated_wait_minutes: 110,
+  },
+  {
+    id: 'srv-10',
+    office_id: 'off-6',
+    title: 'Passport Appointment Entry & Token Counter',
+    title_kn: 'ಪಾಸ್‌ಪೋರ್ಟ್ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಪ್ರವೇಶ ಮತ್ತು ಟೋಕನ್ ಕೌಂಟರ್',
+    description: 'Buddy waits in the entry line and token queue so you only walk in for document verification.',
+    government_fee: 0,
+    queue_buddy_base_fee: 299,
+    estimated_wait_minutes: 70,
+  },
 ];
 
 export const INITIAL_CHECKLISTS: DocumentChecklistItem[] = [
@@ -366,6 +386,9 @@ export const INITIAL_CHECKLISTS: DocumentChecklistItem[] = [
   },
 ];
 
+// Crowd reports are stamped relative to app start so "Live from a buddy" always reads as fresh.
+const minutesAgo = (m: number) => new Date(Date.now() - m * 60000).toISOString();
+
 export const INITIAL_CROWD_REPORTS: CrowdReport[] = [
   {
     id: 'rep-1',
@@ -373,7 +396,7 @@ export const INITIAL_CROWD_REPORTS: CrowdReport[] = [
     source: 'buddy_report',
     people_ahead: 12,
     estimated_wait_minutes: 60,
-    reported_at: '2026-10-09T11:35:00Z',
+    reported_at: minutesAgo(6),
     reporter_name: 'Buddy Ramesh G.',
     notes: 'Token counter 2 moving steadily, approx 5 mins per person.',
   },
@@ -383,7 +406,7 @@ export const INITIAL_CROWD_REPORTS: CrowdReport[] = [
     source: 'historical_agg',
     people_ahead: 24,
     estimated_wait_minutes: 110,
-    reported_at: '2026-10-07T12:00:00Z',
+    reported_at: minutesAgo(2 * 24 * 60),
     notes: 'Usually busy 10:30 AM–1:00 PM on weekdays.',
   },
   {
@@ -392,7 +415,7 @@ export const INITIAL_CROWD_REPORTS: CrowdReport[] = [
     source: 'buddy_report',
     people_ahead: 7,
     estimated_wait_minutes: 35,
-    reported_at: '2026-10-09T11:42:00Z',
+    reported_at: minutesAgo(9),
     reporter_name: 'Buddy Venkatesh M.',
     notes: 'Short queue today at counter 4 for smart card pickup.',
   },
@@ -402,7 +425,7 @@ export const INITIAL_CROWD_REPORTS: CrowdReport[] = [
     source: 'historical_agg',
     people_ahead: 18,
     estimated_wait_minutes: 90,
-    reported_at: '2026-10-08T11:00:00Z',
+    reported_at: minutesAgo(55),
     notes: 'Peak crowd on Tuesday & Friday between 11 AM and 1 PM.',
   },
   {
@@ -411,7 +434,7 @@ export const INITIAL_CROWD_REPORTS: CrowdReport[] = [
     source: 'customer_report',
     people_ahead: 16,
     estimated_wait_minutes: 45,
-    reported_at: '2026-10-09T09:40:00Z',
+    reported_at: minutesAgo(18),
     reporter_name: 'Visitor Ananya S.',
     notes: 'Gate entry line was quick, counter A document check took 10 mins.',
   },
@@ -474,6 +497,10 @@ export const INITIAL_BUDDIES: BuddyProfile[] = [
   },
 ];
 
+// Seed bookings are dated today so the demo always looks current.
+const TODAY = new Date().toISOString().split('T')[0];
+const TOMORROW = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
 export const INITIAL_BOOKINGS: Booking[] = [
   {
     id: 'book-1',
@@ -487,14 +514,14 @@ export const INITIAL_BOOKINGS: Booking[] = [
     office: INITIAL_OFFICES[0],
     service_id: 'srv-1',
     service: INITIAL_SERVICES[0],
-    booking_date: '2026-10-09',
+    booking_date: TODAY,
     arrival_time: '11:00 AM',
     expected_wait_hours: 2.0,
     preferred_language: 'Kannada',
     backup_language: 'English',
     status: 'in_queue',
     token_number: 'KA03-B42',
-    people_ahead: 4,
+    people_ahead: 11,
     queue_buddy_fee: 349,
     government_fee: 200,
     total_amount: 378, // with 29 platform fee
@@ -518,7 +545,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     office: INITIAL_OFFICES[2],
     service_id: 'srv-4',
     service: INITIAL_SERVICES[3],
-    booking_date: '2026-10-10',
+    booking_date: TOMORROW,
     arrival_time: '10:30 AM',
     expected_wait_hours: 1.5,
     preferred_language: 'English',

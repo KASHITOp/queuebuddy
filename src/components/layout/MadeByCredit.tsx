@@ -5,8 +5,8 @@ const CREDIT_TEXT = 'Made by Ravi with Love 💖';
 type CreditTone = 'light' | 'dark';
 
 const toneClass: Record<CreditTone, string> = {
-  light: 'text-[#555555]',
-  dark: 'text-slate-400',
+  light: 'text-ink-mute',
+  dark: 'text-ink-mute',
 };
 
 interface MadeByCreditProps {

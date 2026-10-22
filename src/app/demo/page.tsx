@@ -50,35 +50,35 @@ export default function DemoCockpitPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFCF2] text-[#111111] p-4 sm:p-6 pb-20">
+    <div className="min-h-[100dvh] bg-night text-ink p-4 sm:p-6 pb-20 pt-[calc(16px+var(--sat))]">
       <div className="max-w-xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#E5E0D5] pb-4">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="p-2 rounded-xl bg-[#FFFFFF] border border-[#E5E0D5] text-[#111111] hover:bg-[#F4F0E6] transition-colors"
+              className="p-2 rounded-xl bg-night-700 border border-white/10 text-ink hover:bg-white/[0.05] transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <h1 className="text-xl font-black text-[#111111] tracking-tight">QueueBuddy Demo Cockpit</h1>
-              <p className="text-xs text-[#555555]">Hidden testing environment & role switcher</p>
+              <h1 className="text-xl font-black text-ink tracking-tight">QueueBuddy Demo Cockpit</h1>
+              <p className="text-xs text-ink-mute">Hidden testing environment & role switcher</p>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-[#FFD60A] text-[#111111] font-mono font-bold text-xs border border-[#111111]">
+          <span className="px-2.5 py-1 rounded-full bg-brand text-night font-mono font-bold text-xs border border-white/10">
             DEV / EVAL
           </span>
         </div>
 
         {/* Role Switcher Section */}
-        <div className="p-5 rounded-2xl bg-[#FFFFFF] border-2 border-[#111111]/10 shadow-sm space-y-4">
+        <div className="p-5 rounded-2xl bg-night-700 border border-white/10/10 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-[#111111] uppercase tracking-wide">
+            <h2 className="text-sm font-black text-ink uppercase tracking-wide">
               1. Active Portal Role
             </h2>
-            <span className="text-xs font-mono font-semibold text-[#555555]">
-              Current: <strong className="text-[#0B7A4B]">{user?.role || role}</strong>
+            <span className="text-xs font-mono font-semibold text-ink-mute">
+              Current: <strong className="text-mint">{user?.role || role}</strong>
             </span>
           </div>
 
@@ -87,8 +87,8 @@ export default function DemoCockpitPage() {
               onClick={() => handleRoleSwitch('customer')}
               className={`p-3.5 rounded-xl border flex flex-col items-center gap-1.5 font-bold text-xs transition-all ${
                 role === 'customer'
-                  ? 'bg-[#FFD60A] text-[#111111] border-[#111111] shadow-sm'
-                  : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
+                  ? 'bg-brand text-night border-white/10 shadow-sm'
+                  : 'bg-white/[0.05] text-ink-mute border-white/10 hover:text-night'
               }`}
             >
               <User className="w-5 h-5" />
@@ -99,8 +99,8 @@ export default function DemoCockpitPage() {
               onClick={() => handleRoleSwitch('buddy')}
               className={`p-3.5 rounded-xl border flex flex-col items-center gap-1.5 font-bold text-xs transition-all ${
                 role === 'buddy'
-                  ? 'bg-[#FFD60A] text-[#111111] border-[#111111] shadow-sm'
-                  : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
+                  ? 'bg-brand text-night border-white/10 shadow-sm'
+                  : 'bg-white/[0.05] text-ink-mute border-white/10 hover:text-night'
               }`}
             >
               <UserCheck className="w-5 h-5" />
@@ -111,8 +111,8 @@ export default function DemoCockpitPage() {
               onClick={() => handleRoleSwitch('admin')}
               className={`p-3.5 rounded-xl border flex flex-col items-center gap-1.5 font-bold text-xs transition-all ${
                 role === 'admin'
-                  ? 'bg-[#FFD60A] text-[#111111] border-[#111111] shadow-sm'
-                  : 'bg-[#F4F0E6] text-[#555555] border-[#E5E0D5] hover:text-[#111111]'
+                  ? 'bg-brand text-night border-white/10 shadow-sm'
+                  : 'bg-white/[0.05] text-ink-mute border-white/10 hover:text-night'
               }`}
             >
               <ShieldAlert className="w-5 h-5" />
@@ -123,13 +123,13 @@ export default function DemoCockpitPage() {
           <div className="flex gap-2 pt-1 text-xs">
             <Link
               href="/"
-              className="flex-1 py-2 px-3 rounded-xl bg-[#111111] text-[#FFFCF2] text-center font-bold hover:bg-black transition-colors"
+              className="flex-1 py-2 px-3 rounded-xl bg-ink text-night text-center font-bold hover:bg-black transition-colors"
             >
               Open Customer App
             </Link>
             <Link
               href="/buddy"
-              className="flex-1 py-2 px-3 rounded-xl bg-[#0B7A4B] text-white text-center font-bold hover:bg-[#09633d] transition-colors"
+              className="flex-1 py-2 px-3 rounded-xl bg-mint text-white text-center font-bold hover:bg-[#09633d] transition-colors"
             >
               Open Buddy Cockpit
             </Link>
@@ -143,25 +143,25 @@ export default function DemoCockpitPage() {
         </div>
 
         {/* Live Queue Simulation */}
-        <div className="p-5 rounded-2xl bg-[#FFFFFF] border-2 border-[#111111]/10 shadow-sm space-y-4">
+        <div className="p-5 rounded-2xl bg-night-700 border border-white/10/10 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-[#111111] uppercase tracking-wide">
+            <h2 className="text-sm font-black text-ink uppercase tracking-wide">
               2. Taxi-Meter Queue Simulator
             </h2>
-            <span className="text-xs font-mono font-bold text-[#FFD60A] bg-[#111111] px-2 py-0.5 rounded">
+            <span className="text-xs font-mono font-bold text-brand bg-night-600 px-2 py-0.5 rounded">
               Token: {activeBooking?.token_number || 'KA03-B42'}
             </span>
           </div>
 
-          <p className="text-xs text-[#555555]">
+          <p className="text-xs text-ink-mute">
             Simulate real-time counter changes to test the customer taxi-meter flip animation, summons, and timeline updates:
           </p>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[#F4F0E6] border border-[#E5E0D5]">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.05] border border-white/10">
             <div className="flex items-center gap-2">
-              <Ticket className="w-4 h-4 text-[#0B7A4B]" />
+              <Ticket className="w-4 h-4 text-mint" />
               <span className="text-xs font-bold">People Ahead:</span>
-              <span className="text-lg font-mono font-black text-[#111111]">
+              <span className="text-lg font-mono font-black text-ink">
                 {activeBooking?.people_ahead ?? 4}
               </span>
             </div>
@@ -169,13 +169,13 @@ export default function DemoCockpitPage() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => handleSimulateQueueStep(-1)}
-                className="px-3 py-1.5 rounded-lg bg-[#FFD60A] text-[#111111] font-bold text-xs border border-[#111111] active:scale-95"
+                className="px-3 py-1.5 rounded-lg bg-brand text-night font-bold text-xs border border-white/10 active:scale-95"
               >
                 -1 Advance Queue
               </button>
               <button
                 onClick={() => handleSimulateQueueStep(1)}
-                className="px-3 py-1.5 rounded-lg bg-[#FFFFFF] text-[#111111] font-bold text-xs border border-[#E5E0D5] active:scale-95"
+                className="px-3 py-1.5 rounded-lg bg-night-700 text-ink font-bold text-xs border border-white/10 active:scale-95"
               >
                 +1 Add Wait
               </button>
@@ -191,7 +191,7 @@ export default function DemoCockpitPage() {
             </button>
             <button
               onClick={() => activeBooking && updateBookingStatus(activeBooking.id, 'handover_completed')}
-              className="py-2.5 px-3 rounded-xl bg-[#0B7A4B] text-white font-bold active:scale-95 transition-transform"
+              className="py-2.5 px-3 rounded-xl bg-mint text-white font-bold active:scale-95 transition-transform"
             >
               ✓ Complete Handover
             </button>
@@ -199,19 +199,19 @@ export default function DemoCockpitPage() {
         </div>
 
         {/* Viewport Width Guides */}
-        <div className="p-5 rounded-2xl bg-[#FFFFFF] border-2 border-[#111111]/10 shadow-sm space-y-3">
-          <div className="flex items-center gap-2 text-sm font-black text-[#111111] uppercase tracking-wide">
-            <Smartphone className="w-4 h-4 text-[#0B7A4B]" />
+        <div className="p-5 rounded-2xl bg-night-700 border border-white/10/10 shadow-sm space-y-3">
+          <div className="flex items-center gap-2 text-sm font-black text-ink uppercase tracking-wide">
+            <Smartphone className="w-4 h-4 text-mint" />
             <span>3. Mobile Target Widths</span>
           </div>
-          <p className="text-xs text-[#555555]">
+          <p className="text-xs text-ink-mute">
             Target tested widths: <strong>360px</strong> (Galaxy S8 / SE), <strong>390px</strong> (iPhone 13/14/15/16 default), and <strong>430px</strong> (iPhone Pro Max).
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => setTestViewport('360')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
-                testViewport === '360' ? 'bg-[#FFD60A] border-[#111111]' : 'bg-[#F4F0E6] border-[#E5E0D5]'
+                testViewport === '360' ? 'bg-brand border-white/10' : 'bg-white/[0.05] border-white/10'
               }`}
             >
               360px
@@ -219,7 +219,7 @@ export default function DemoCockpitPage() {
             <button
               onClick={() => setTestViewport('390')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
-                testViewport === '390' ? 'bg-[#FFD60A] border-[#111111]' : 'bg-[#F4F0E6] border-[#E5E0D5]'
+                testViewport === '390' ? 'bg-brand border-white/10' : 'bg-white/[0.05] border-white/10'
               }`}
             >
               390px (Default)
@@ -227,7 +227,7 @@ export default function DemoCockpitPage() {
             <button
               onClick={() => setTestViewport('430')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
-                testViewport === '430' ? 'bg-[#FFD60A] border-[#111111]' : 'bg-[#F4F0E6] border-[#E5E0D5]'
+                testViewport === '430' ? 'bg-brand border-white/10' : 'bg-white/[0.05] border-white/10'
               }`}
             >
               430px
@@ -235,7 +235,7 @@ export default function DemoCockpitPage() {
             <button
               onClick={() => setTestViewport('full')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold border transition-colors ${
-                testViewport === 'full' ? 'bg-[#FFD60A] border-[#111111]' : 'bg-[#F4F0E6] border-[#E5E0D5]'
+                testViewport === 'full' ? 'bg-brand border-white/10' : 'bg-white/[0.05] border-white/10'
               }`}
             >
               Full Width

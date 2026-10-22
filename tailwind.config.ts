@@ -28,6 +28,23 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        // Midnight app palette (customer app, login, demo cockpit)
+        night: {
+          DEFAULT: "#09090B",
+          900: "#09090B",
+          800: "#111114",
+          700: "#18181C",
+          600: "#202026",
+          500: "#2A2A31",
+        },
+        ink: {
+          DEFAULT: "#FAFAF7",
+          soft: "#C9C9CF",
+          mute: "#8B8B94",
+          faint: "#5C5C66",
+        },
+        mint: "#3DDC97",
+        coral: "#FF6B4A",
         qb: {
           chalk: "#FFFCF2",
           meter: "#111111",
@@ -93,6 +110,10 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        glow: "0 0 0 1px rgba(255,214,10,0.35), 0 12px 40px -8px rgba(255,214,10,0.35)",
+        card: "0 1px 0 0 rgba(255,255,255,0.06) inset, 0 20px 40px -24px rgba(0,0,0,0.8)",
       },
       keyframes: {
         "pulse-subtle": {

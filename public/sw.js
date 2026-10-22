@@ -1,5 +1,5 @@
 // QueueBuddy PWA Service Worker
-const CACHE_NAME = 'queuebuddy-pwa-v2';
+const CACHE_NAME = 'queuebuddy-pwa-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -7,7 +7,6 @@ const STATIC_ASSETS = [
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
   '/apple-touch-icon.png',
-  '/favicon.ico',
 ];
 
 self.addEventListener('install', (event) => {

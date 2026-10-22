@@ -1,6 +1,8 @@
 'use client';
 
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Geolocation } from '@capacitor/geolocation';
 import { PushNotifications } from '@capacitor/push-notifications';
@@ -10,6 +12,57 @@ import { PushNotifications } from '@capacitor/push-notifications';
  */
 export const isNativeApp = (): boolean => {
   return Capacitor.isNativePlatform();
+};
+
+export type HapticKind = 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'selection';
+
+/**
+ * Tactile feedback for taps and queue events. Native vibration engine inside the APK, navigator.vibrate on the web.
+ */
+export const haptic = (kind: HapticKind = 'light') => {
+  if (isNativeApp()) {
+    const run =
+      kind === 'success'
+        ? Haptics.notification({ type: NotificationType.Success })
+        : kind === 'warning'
+        ? Haptics.notification({ type: NotificationType.Warning })
+        : kind === 'selection'
+        ? Haptics.selectionChanged()
+        : Haptics.impact({
+            style:
+              kind === 'heavy' ? ImpactStyle.Heavy : kind === 'medium' ? ImpactStyle.Medium : ImpactStyle.Light,
+          });
+    run.catch(() => undefined);
+    return;
+  }
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    try {
+      navigator.vibrate(kind === 'success' || kind === 'warning' ? [12, 40, 12] : kind === 'heavy' ? 20 : 8);
+    } catch {
+      // Some browsers block vibration without a user gesture.
+    }
+  }
+};
+
+/**
+ * Light status/navigation bar icons over the dark app background.
+ */
+export const applyNativeSystemBars = () => {
+  if (!isNativeApp()) return;
+  SystemBars.setStyle({ style: SystemBarsStyle.Dark }).catch(() => undefined);
+};
+
+/**
+ * Routes the Android hardware back button to `handler`. Returning false from the handler exits the app.
+ */
+export const onNativeBackButton = (handler: () => boolean) => {
+  if (!isNativeApp()) return () => undefined;
+  const listener = App.addListener('backButton', () => {
+    if (!handler()) App.exitApp();
+  });
+  return () => {
+    listener.then((l) => l.remove()).catch(() => undefined);
+  };
 };
 
 /**

@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'QueueBuddy',
   },
 };
@@ -50,7 +50,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#FFD60A',
+  viewportFit: 'cover',
+  themeColor: '#09090B',
 };
 
 export default function RootLayout({
@@ -65,12 +66,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="QueueBuddy" />
-        <meta name="theme-color" content="#FFD60A" />
       </head>
       <body
-        className={`${archivo.variable} ${onest.variable} ${martianMono.variable} font-sans antialiased bg-[#FFFCF2] text-[#111111] selection:bg-[#FFD60A] selection:text-[#111111] min-h-screen`}
+        className={`${archivo.variable} ${onest.variable} ${martianMono.variable} font-sans antialiased bg-night text-ink selection:bg-brand selection:text-night`}
       >
         <AuthProvider>
           <AppProvider>

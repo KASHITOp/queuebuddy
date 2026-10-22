@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Office } from '@/types';
+import { OFFICE_TYPE_META } from '@/lib/officeMeta';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface OfficeMapProps {
@@ -11,68 +12,55 @@ interface OfficeMapProps {
   provider?: 'osm' | 'maptiler' | 'mapbox';
 }
 
+// Free OpenStreetMap raster tiles (no API key); the .night-map CSS filter turns them dark to match the app.
+const OSM_TILES = ['a', 'b', 'c'].map((s) => `https://${s}.tile.openstreetmap.org/{z}/{x}/{y}.png`);
+
 export const OfficeMap: React.FC<OfficeMapProps> = ({
   offices,
   selectedOffice = null,
   onSelectOffice,
-  provider = (process.env.NEXT_PUBLIC_MAP_PROVIDER as any) || 'osm',
+  provider = (process.env.NEXT_PUBLIC_MAP_PROVIDER as OfficeMapProps['provider']) || 'osm',
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const onSelectRef = useRef(onSelectOffice);
+  onSelectRef.current = onSelectOffice;
   const [mapLoaded, setMapLoaded] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
-    // Dynamically import maplibre-gl to avoid SSR issues
     const initMap = async () => {
       const maplibregl = (await import('maplibre-gl')).default;
-
       if (!mapContainer.current || mapRef.current) return;
 
-      // Swappable style definition
-      let style: any;
-      if (provider === 'maptiler' && process.env.NEXT_PUBLIC_MAP_KEY) {
-        style = `https://api.maptiler.com/maps/streets-v2/style.json?key=${process.env.NEXT_PUBLIC_MAP_KEY}`;
-      } else {
-        // Default Free OpenStreetMap style (no API key required)
-        style = {
-          version: 8,
-          sources: {
-            'osm-tiles': {
-              type: 'raster',
-              tiles: [
-                'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              ],
-              tileSize: 256,
-              attribution: '© OpenStreetMap contributors',
-            },
-          },
-          layers: [
-            {
-              id: 'osm-tiles-layer',
-              type: 'raster',
-              source: 'osm-tiles',
-              minzoom: 0,
-              maxzoom: 19,
-            },
-          ],
-        };
-      }
+      const style =
+        provider === 'maptiler' && process.env.NEXT_PUBLIC_MAP_KEY
+          ? `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${process.env.NEXT_PUBLIC_MAP_KEY}`
+          : {
+              version: 8 as const,
+              sources: {
+                basemap: {
+                  type: 'raster' as const,
+                  tiles: OSM_TILES,
+                  tileSize: 256,
+                  attribution: '© OpenStreetMap contributors',
+                },
+              },
+              layers: [{ id: 'basemap', type: 'raster' as const, source: 'basemap' }],
+            };
 
       const map = new maplibregl.Map({
         container: mapContainer.current,
         style,
-        center: [77.5946, 12.9716], // Bengaluru center (Vidhana Soudha / MG Road)
-        zoom: 11.5,
-        attributionControl: false,
+        center: [77.6146, 12.9616],
+        zoom: 11.3,
+        attributionControl: { compact: true },
+        dragRotate: false,
+        pitchWithRotate: false,
       });
-
-      // Add navigation controls (+ / -)
-      map.addControl(new maplibregl.NavigationControl(), 'top-right');
+      map.touchZoomRotate.disableRotation();
 
       map.on('load', () => {
         if (!isMounted) return;
@@ -92,97 +80,58 @@ export const OfficeMap: React.FC<OfficeMapProps> = ({
     };
   }, [provider]);
 
-  // Update markers when offices or selectedOffice change
   useEffect(() => {
     if (!mapLoaded || !mapRef.current) return;
 
     const renderMarkers = async () => {
       const maplibregl = (await import('maplibre-gl')).default;
 
-      // Clear existing markers
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
 
       offices.forEach((office) => {
+        const meta = OFFICE_TYPE_META[office.office_type];
         const isSelected = selectedOffice?.id === office.id;
-        const isComingSoon = office.status === 'coming_soon';
+        const soon = office.status === 'coming_soon';
 
-        // Marker color by office type
-        let colorClass = 'bg-amber-500 text-slate-950 border-amber-300';
-        if (office.office_type === 'rto') colorClass = 'bg-indigo-600 text-white border-indigo-300';
-        if (office.office_type === 'psk') colorClass = 'bg-emerald-600 text-white border-emerald-300';
-        if (office.office_type === 'sub_registrar') colorClass = 'bg-amber-600 text-white border-amber-300';
-        if (office.office_type === 'utility') colorClass = 'bg-cyan-600 text-white border-cyan-300';
-
-        const el = document.createElement('div');
-        el.className = `cursor-pointer transition-transform duration-200 transform hover:scale-110`;
+        const el = document.createElement('button');
+        el.setAttribute('aria-label', office.name);
+        el.style.cssText = 'background:none;border:0;padding:0;cursor:pointer;';
         el.innerHTML = `
-          <div class="relative flex items-center justify-center">
-            ${
-              isSelected
-                ? `<div class="absolute -inset-2 bg-amber-400 rounded-full animate-ping opacity-75"></div>`
-                : ''
-            }
-            <div class="relative px-2.5 py-1.5 rounded-full text-xs font-bold shadow-lg border-2 flex items-center gap-1.5 ${colorClass} ${
-          isComingSoon ? 'opacity-80 border-dashed' : ''
-        }">
-              <span>${
-                office.office_type === 'rto'
-                  ? '🚗'
-                  : office.office_type === 'sub_registrar'
-                  ? '📜'
-                  : office.office_type === 'psk'
-                  ? '🛂'
-                  : office.office_type === 'utility'
-                  ? '⚡'
-                  : '🏛️'
-              }</span>
-              <span class="truncate max-w-[110px]">${office.name.split(' ')[0]}</span>
+          <div style="display:flex;flex-direction:column;align-items:center;opacity:${soon ? 0.55 : 1};transform:scale(${isSelected ? 1.15 : 1});transition:transform .2s">
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;border-radius:999px;background:#18181C;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 8px 20px rgba(0,0,0,.6);font:700 12px/1 var(--font-onest),system-ui;color:#FAFAF7;white-space:nowrap">
+              <span style="width:18px;height:18px;border-radius:999px;background:linear-gradient(140deg,${meta.tint[0]},${meta.tint[1]});display:inline-block"></span>
+              ${office.area}
             </div>
-            <div class="w-2 h-2 rotate-45 mt-[-4px] bg-slate-900 border-r border-b border-white"></div>
-          </div>
-        `;
+            <div style="width:2px;height:8px;background:${meta.tint[0]}"></div>
+            <div style="width:8px;height:8px;border-radius:999px;background:${meta.tint[0]};box-shadow:0 0 12px ${meta.tint[0]}"></div>
+          </div>`;
 
         el.addEventListener('click', () => {
-          onSelectOffice(office);
-          mapRef.current.flyTo({
-            center: [office.lng, office.lat],
-            zoom: 13.5,
-            duration: 800,
-          });
+          onSelectRef.current(office);
+          mapRef.current?.flyTo({ center: [office.lng, office.lat], zoom: 13.5, duration: 800 });
         });
 
-        const marker = new maplibregl.Marker({ element: el })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
           .setLngLat([office.lng, office.lat])
           .addTo(mapRef.current);
-
         markersRef.current.push(marker);
       });
     };
 
     renderMarkers();
-  }, [offices, selectedOffice, mapLoaded, onSelectOffice]);
+  }, [offices, selectedOffice, mapLoaded]);
 
-  // Center on selected office if changed externally
   useEffect(() => {
     if (mapLoaded && mapRef.current && selectedOffice) {
-      mapRef.current.flyTo({
-        center: [selectedOffice.lng, selectedOffice.lat],
-        zoom: 13.5,
-        duration: 900,
-      });
+      mapRef.current.flyTo({ center: [selectedOffice.lng, selectedOffice.lat], zoom: 13.5, duration: 900 });
     }
   }, [selectedOffice, mapLoaded]);
 
   return (
-    <div className="relative w-full h-full min-h-[320px] rounded-2xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
-      <div ref={mapContainer} className="w-full h-full min-h-[320px]" />
-
-      {/* Swappable Provider Badge */}
-      <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-md bg-slate-900/80 backdrop-blur-md text-[10px] font-medium text-slate-300 border border-slate-700/60 flex items-center gap-1.5 z-10 pointer-events-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        <span>Map: {provider.toUpperCase()} (OpenStreetMap tiles)</span>
-      </div>
+    <div className={`relative w-full h-full min-h-[320px] bg-night-700 ${provider === 'maptiler' && process.env.NEXT_PUBLIC_MAP_KEY ? '' : 'night-map'}`}>
+      {/* Inline position: maplibre-gl.css sets .maplibregl-map to relative, which would collapse it to 0px. */}
+      <div ref={mapContainer} style={{ position: 'absolute', inset: 0 }} />
     </div>
   );
 };

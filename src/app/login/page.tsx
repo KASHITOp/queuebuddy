@@ -66,12 +66,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFCF2] text-[#111111] flex flex-col justify-center items-center p-4 selection:bg-[#FFD60A] selection:text-[#111111]">
+    <div className="min-h-[100dvh] bg-night text-ink flex flex-col justify-center items-center p-4 pt-[calc(16px+var(--sat))] selection:bg-brand selection:text-night">
       <div className="w-full max-w-md relative z-10 space-y-5">
         {/* Back Link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#555555] hover:text-[#111111] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-ink-mute hover:text-ink transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Home</span>
@@ -80,19 +80,19 @@ export default function LoginPage() {
         {/* Brand Header */}
         <div className="text-center space-y-1.5">
           <Link href="/" className="inline-flex items-center gap-2 mx-auto">
-            <div className="w-11 h-11 rounded-2xl bg-[#FFD60A] border-2 border-[#111111] text-[#111111] font-black text-2xl flex items-center justify-center shadow-sm">
+            <div className="w-11 h-11 rounded-2xl bg-brand border border-white/10 text-night font-black text-2xl flex items-center justify-center shadow-sm">
               Q
             </div>
             <div className="text-left">
-              <span className="font-extrabold text-lg tracking-tight text-[#111111] block font-display">
+              <span className="font-extrabold text-lg tracking-tight text-ink block font-display">
                 QueueBuddy
               </span>
-              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#FFD60A] text-[#111111] border border-[#111111]/20">
+              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-brand text-night border border-white/10">
                 Bengaluru Portal
               </span>
             </div>
           </Link>
-          <h1 className="text-xl font-black text-[#111111] mt-2 font-display">
+          <h1 className="text-xl font-black text-ink mt-2 font-display">
             {mode === 'signup'
               ? 'Create Customer Account'
               : mode === 'magic'
@@ -101,20 +101,20 @@ export default function LoginPage() {
               ? 'Reset Your Password'
               : 'Sign in to QueueBuddy'}
           </h1>
-          <p className="text-xs text-[#555555] max-w-xs mx-auto">
+          <p className="text-xs text-ink-mute max-w-xs mx-auto">
             Book verified buddies who hold government queue spots in Bengaluru.
           </p>
         </div>
 
         {/* Auth Mode Tabs */}
-        <div className="grid grid-cols-2 p-1 rounded-2xl bg-[#F4F0E6] border border-[#E5E0D5] text-xs font-bold">
+        <div className="grid grid-cols-2 p-1 rounded-2xl bg-white/[0.05] border border-white/10 text-xs font-bold">
           <button
             type="button"
             onClick={() => setMode('signin')}
             className={`py-2 rounded-xl transition-all ${
               mode === 'signin'
-                ? 'bg-[#FFFFFF] text-[#111111] shadow-sm font-black'
-                : 'text-[#555555] hover:text-[#111111]'
+                ? 'bg-night-700 text-ink shadow-sm font-black'
+                : 'text-ink-mute hover:text-ink'
             }`}
           >
             Sign In
@@ -124,8 +124,8 @@ export default function LoginPage() {
             onClick={() => setMode('signup')}
             className={`py-2 rounded-xl transition-all ${
               mode === 'signup'
-                ? 'bg-[#FFFFFF] text-[#111111] shadow-sm font-black'
-                : 'text-[#555555] hover:text-[#111111]'
+                ? 'bg-night-700 text-ink shadow-sm font-black'
+                : 'text-ink-mute hover:text-ink'
             }`}
           >
             Register
@@ -133,34 +133,34 @@ export default function LoginPage() {
         </div>
 
         {/* Main Card */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-[#FFFFFF] border-2 border-[#111111] shadow-xl space-y-4">
+        <div className="p-5 sm:p-6 rounded-3xl bg-night-700 border border-white/10 shadow-xl space-y-4">
           {/* Quick Demo 1-Click Login Button */}
           <button
             type="button"
             onClick={() => quickDemoLogin('customer')}
-            className="w-full py-3 px-4 rounded-xl bg-[#F4F0E6] hover:bg-[#EAE6DF] border-2 border-[#111111]/20 text-[#111111] font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all touch-target"
+            className="w-full py-3 px-4 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-ink font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all touch-target"
           >
-            <Sparkles className="w-4 h-4 text-[#FFD60A]" />
+            <Sparkles className="w-4 h-4 text-brand" />
             <span>1-Click Demo Login (Arjun Mehta)</span>
           </button>
 
           <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-[#E5E0D5]" />
-            <span className="flex-shrink mx-3 text-[10px] uppercase font-mono text-[#777777]">
+            <div className="flex-grow border-t border-white/10" />
+            <span className="flex-shrink mx-3 text-[10px] uppercase font-mono text-ink-faint">
               or with email
             </span>
-            <div className="flex-grow border-t border-[#E5E0D5]" />
+            <div className="flex-grow border-t border-white/10" />
           </div>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-[#FFEBE6] border border-[#FF5A36]/30 text-[#FF5A36] text-xs font-bold flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-coral/10 border border-coral/30 text-coral text-xs font-bold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3 rounded-xl bg-[#E6F5ED] border border-[#0B7A4B]/30 text-[#0B7A4B] text-xs font-bold flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-mint/10 border border-mint/30 text-mint text-xs font-bold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{successMsg}</span>
             </div>
@@ -170,51 +170,51 @@ export default function LoginPage() {
             {mode === 'signup' && (
               <>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-[#555555]">Full Name</label>
+                  <label className="text-[11px] font-bold text-ink-mute">Full Name</label>
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Arjun Mehta"
-                    className="w-full p-2.5 rounded-xl bg-[#FFFFFF] border-2 border-[#E5E0D5] text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    className="w-full p-2.5 rounded-xl bg-night-700 border border-white/10 text-xs text-ink focus:border-white/10 focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-[#555555]">Phone Number</label>
+                  <label className="text-[11px] font-bold text-ink-mute">Phone Number</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+91 98450 12345"
-                    className="w-full p-2.5 rounded-xl bg-[#FFFFFF] border-2 border-[#E5E0D5] text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                    className="w-full p-2.5 rounded-xl bg-night-700 border border-white/10 text-xs text-ink focus:border-white/10 focus:outline-none"
                   />
                 </div>
               </>
             )}
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-[#555555]">Email Address</label>
+              <label className="text-[11px] font-bold text-ink-mute">Email Address</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full p-2.5 rounded-xl bg-[#FFFFFF] border-2 border-[#E5E0D5] text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                className="w-full p-2.5 rounded-xl bg-night-700 border border-white/10 text-xs text-ink focus:border-white/10 focus:outline-none"
               />
             </div>
 
             {mode !== 'magic' && mode !== 'forgot' && (
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-[#555555]">Password</label>
+                  <label className="text-[11px] font-bold text-ink-mute">Password</label>
                   {mode === 'signin' && (
                     <button
                       type="button"
                       onClick={() => setMode('forgot')}
-                      className="text-[10px] text-[#555555] hover:underline"
+                      className="text-[10px] text-ink-mute hover:underline"
                     >
                       Forgot?
                     </button>
@@ -226,7 +226,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full p-2.5 rounded-xl bg-[#FFFFFF] border-2 border-[#E5E0D5] text-xs text-[#111111] focus:border-[#111111] focus:outline-none"
+                  className="w-full p-2.5 rounded-xl bg-night-700 border border-white/10 text-xs text-ink focus:border-white/10 focus:outline-none"
                 />
               </div>
             )}
@@ -234,7 +234,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 px-4 rounded-xl bg-[#FFD60A] text-[#111111] font-black text-xs border-2 border-[#111111] shadow-md active:scale-95 transition-transform flex items-center justify-center gap-1.5 touch-target"
+              className="w-full py-3 px-4 rounded-xl bg-brand text-night font-black text-xs border border-white/10 shadow-md active:scale-95 transition-transform flex items-center justify-center gap-1.5 touch-target"
             >
               <span>
                 {isSubmitting
@@ -252,10 +252,10 @@ export default function LoginPage() {
           </form>
 
           {/* Quick links to buddy / admin */}
-          <div className="pt-2 border-t border-[#E5E0D5] text-center text-xs space-y-1">
+          <div className="pt-2 border-t border-white/10 text-center text-xs space-y-1">
             <Link
               href="/buddy/apply"
-              className="text-[#0B7A4B] font-bold hover:underline block"
+              className="text-mint font-bold hover:underline block"
             >
               Apply to become a Queue Buddy in Bengaluru →
             </Link>

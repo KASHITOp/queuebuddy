@@ -34,3 +34,7 @@ next-env.d.ts
 *.jks
 *.keystore
 keystore.properties
+/dist-mobile/
+
+# Built Android packages handed out for install
+*.apk

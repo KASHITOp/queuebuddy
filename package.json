@@ -7,18 +7,22 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "cap:sync": "cap sync android",
+    "cap:sync": "npm run build:mobile && cap sync android",
     "cap:open": "cap open android",
-    "cap:run": "cap run android",
-    "cap:run:local": "CAPACITOR_SERVER_URL=http://10.0.2.2:3000 cap run android",
-    "cap:build": "cd android && ./gradlew assembleDebug",
-    "cap:bundle": "cd android && ./gradlew bundleRelease"
+    "cap:run": "npm run cap:sync && cap run android",
+    "cap:run:local": "npm run build:mobile && CAPACITOR_SERVER_URL=http://10.0.2.2:3000 cap run android",
+    "cap:build": "npm run cap:sync && cd android && ./gradlew assembleDebug",
+    "cap:bundle": "npm run cap:sync && cd android && ./gradlew bundleRelease",
+    "build:mobile": "rm -rf dist-mobile && MOBILE_EXPORT=1 next build",
+    "cap:apk": "npm run cap:sync && cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
     "@capacitor/camera": "^8.2.6",
     "@capacitor/core": "^8.5.3",
     "@capacitor/geolocation": "^8.2.4",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/push-notifications": "^8.1.3",
     "@hookform/resolvers": "^3.9.0",
     "@supabase/ssr": "^0.5.1",
@@ -38,7 +42,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.6.9",
+    "@capacitor/cli": "^8.5.3",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20.17.0",
     "@types/react": "^18.3.12",
