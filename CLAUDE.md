@@ -46,7 +46,7 @@ Copy `.env.example` to `.env.local`. `NEXT_PUBLIC_DEMO_MODE=true` (or leaving th
 
 ## Android (Capacitor)
 
-- `capacitor.config.ts` loads a **remote site** in the WebView so Supabase Auth, OAuth, API routes and Realtime work. `server.url` is `CAPACITOR_SERVER_URL`, else `NEXT_PUBLIC_APP_URL`, else `https://queuebuddy.vercel.app`. The Capacitor CLI does not read `.env` files, so set these in the shell. `webDir` is `public`, which holds only the PWA files. Set `CAPACITOR_LIVE=false` to drop the server URL.
+- `capacitor.config.ts` loads a **remote site** in the WebView so Supabase Auth, OAuth, API routes and Realtime work. `server.url` is `CAPACITOR_SERVER_URL`, else `NEXT_PUBLIC_APP_URL`, else `https://queuebuddy-amber.vercel.app`. The Capacitor CLI does not read `.env` files, so set these in the shell. `webDir` is `public`, which holds only the PWA files. Set `CAPACITOR_LIVE=false` to drop the server URL.
 - The URL is baked into `android/app/src/main/assets/capacitor.config.json` at sync time, so the app keeps whichever URL the last `cap sync` / `cap run` used.
   - Local testing: run `npm run dev`, then `npm run cap:run:local` (uses `http://10.0.2.2:3000`, the emulator's alias for the host's localhost).
   - Back to the live site: `npm run cap:run` (or `CAPACITOR_SERVER_URL=https://<your-site> npx cap run android`).
