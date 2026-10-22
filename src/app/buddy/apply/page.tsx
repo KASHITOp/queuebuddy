@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Upload,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 const ALL_LANGUAGES: SupportedLanguage[] = [
   'Kannada',
@@ -315,6 +316,7 @@ export default function BuddyApplyPage() {
           </div>
         </form>
       </div>
+      <MadeByCreditFooter tone="dark" className="relative z-10" />
     </div>
   );
 }

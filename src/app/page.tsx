@@ -34,6 +34,7 @@ import {
   Bell,
   ArrowRight,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 export default function HomePage() {
   const { user, isAuthenticated, signOut, deleteAccountAndData } = useAuth();
@@ -103,7 +104,8 @@ export default function HomePage() {
       <Navbar onAccountClick={() => setCurrentTab('account')} />
 
       {/* Main View Container (Designed for 390px Phone First) */}
-      <main className="flex-1 w-full max-w-md mx-auto px-4 py-3 pb-32 sm:pb-28 space-y-4">
+      {/* Bottom padding clears the fixed action bar + tab bar (~140px) and the device safe area */}
+      <main className="flex-1 w-full max-w-md mx-auto px-4 py-3 pb-[calc(10rem+env(safe-area-inset-bottom))] space-y-4">
         {/* ============================================================ */}
         {/* TAB 1: HOME SCREEN                                           */}
         {/* ============================================================ */}
@@ -396,6 +398,8 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        <MadeByCreditFooter className="pt-2" />
       </main>
 
       {/* Office Detail Bottom Sheet Modal */}

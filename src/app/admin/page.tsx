@@ -21,6 +21,7 @@ import {
   X,
   Send,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 export default function AdminPage() {
   const { user, role, adminSubRole, quickDemoLogin } = useAuth();
@@ -93,6 +94,7 @@ export default function AdminPage() {
             </button>
           </div>
         </div>
+        <MadeByCreditFooter tone="dark" />
       </div>
     );
   }
@@ -216,6 +218,7 @@ export default function AdminPage() {
         {/* Core Admin Portal (Dispatch, Verification, Content, Disputes) */}
         <AdminPortal />
       </main>
+      <MadeByCreditFooter tone="dark" />
     </div>
   );
 }

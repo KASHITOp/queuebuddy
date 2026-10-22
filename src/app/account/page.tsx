@@ -21,6 +21,7 @@ import {
   Moon,
   Sun,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 export default function AccountPage() {
   const { user, signOut, deleteAccountAndData } = useAuth();
@@ -65,6 +66,7 @@ export default function AccountPage() {
           >
             Go to Login
           </Link>
+          <MadeByCreditFooter />
         </div>
       </div>
     );
@@ -279,6 +281,7 @@ export default function AccountPage() {
           </div>
         )}
       </main>
+      <MadeByCreditFooter />
     </div>
   );
 }

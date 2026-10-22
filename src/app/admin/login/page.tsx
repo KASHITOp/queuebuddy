@@ -15,6 +15,7 @@ import {
   Server,
   Fingerprint,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 export default function AdminLoginPage() {
   const { signInWithEmail, signInWithGoogle, quickDemoLogin } = useAuth();
@@ -191,6 +192,7 @@ export default function AdminLoginPage() {
           </Link>
         </div>
       </div>
+      <MadeByCreditFooter tone="dark" className="relative z-10" />
     </div>
   );
 }

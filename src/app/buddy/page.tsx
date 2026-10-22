@@ -16,6 +16,7 @@ import {
   Sparkles,
   Phone,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 export default function BuddyPage() {
   const { user, buddyApplication, quickDemoLogin } = useAuth();
@@ -104,6 +105,7 @@ export default function BuddyPage() {
           <BuddyPortal />
         )}
       </main>
+      <MadeByCreditFooter tone="dark" />
     </div>
   );
 }

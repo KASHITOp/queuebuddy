@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Locale } from '@/lib/i18n';
 import Link from 'next/link';
 import { Globe, User as UserIcon } from 'lucide-react';
+import { MadeByCreditHeader } from '@/components/layout/MadeByCredit';
 
 interface NavbarProps {
   onAccountClick?: () => void;
@@ -29,6 +30,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onAccountClick }) => {
 
   return (
     <header className="sticky top-0 z-30 w-full bg-[#FFFCF2]/90 backdrop-blur-md border-b border-[#E5E0D5] px-4 py-2.5">
+      {/* Credit sits in the empty gutter beside the 448px content on wide screens only */}
+      <MadeByCreditHeader className="absolute right-6 top-1/2 -translate-y-1/2" />
       <div className="max-w-md mx-auto flex items-center justify-between gap-2">
         {/* Mobile Brand Title */}
         <Link href="/" className="flex items-center gap-2.5 group">

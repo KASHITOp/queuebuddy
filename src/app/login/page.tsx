@@ -16,6 +16,7 @@ import {
   KeyRound,
   ArrowLeft,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 export default function LoginPage() {
   const {
@@ -261,6 +262,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      <MadeByCreditFooter className="relative z-10" />
     </div>
   );
 }

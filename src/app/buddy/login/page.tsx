@@ -14,6 +14,7 @@ import {
   Sparkles,
   UserCheck,
 } from 'lucide-react';
+import { MadeByCreditFooter } from '@/components/layout/MadeByCredit';
 
 export default function BuddyLoginPage() {
   const {
@@ -315,6 +316,7 @@ export default function BuddyLoginPage() {
           </div>
         </div>
       </div>
+      <MadeByCreditFooter tone="dark" className="relative z-10" />
     </div>
   );
 }
